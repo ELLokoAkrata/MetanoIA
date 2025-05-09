@@ -3,7 +3,7 @@ Módulo para la configuración del sistema de logging.
 """
 import logging
 
-def setup_logger(name="psycho-bot"):
+def setup_logger(name="MetanoIA"):
     """
     Configura y devuelve un logger con el formato y nivel especificados.
     
