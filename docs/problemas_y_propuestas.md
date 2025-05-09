@@ -41,6 +41,49 @@ groq.APIStatusError: Error code: 413 - {'error': {'message': 'Request too large 
 
 **Impacto**: La aplicación no podía generar respuestas cuando la conversación se volvía demasiado larga, limitando la utilidad del chatbot en conversaciones extensas.
 
+### 2025-05-09: Error de importación en la integración de herramientas agénticas
+**Problema**: Al implementar la integración de herramientas agénticas, se produjo un error por falta de importación de la función `display_agentic_context` en el archivo principal:
+```
+2025-05-09 16:29:22.251 Uncaught app execution
+Traceback (most recent call last):
+  File "C:\Python311\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 88, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Python311\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 579, in code_to_exec
+    exec(code, module.__dict__)
+  File "C:\Users\Ricardo Ruiz\Desktop\MetanoIA\app.py", line 67, in <module>
+    main()
+  File "C:\Users\Ricardo Ruiz\Desktop\MetanoIA\app.py", line 60, in main
+    display_agentic_context(session_state)
+    ^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'display_agentic_context' is not defined
+```
+
+**Impacto**: La aplicación no podía iniciarse después de implementar las herramientas agénticas, impidiendo probar la nueva funcionalidad.
+
+### 2025-05-09: Error en el procesamiento de herramientas agénticas
+**Problema**: Al procesar las herramientas agénticas ejecutadas, se produjo un error cuando el campo "output" era un string en lugar de un diccionario:
+```
+Traceback (most recent call last):
+  File "C:\Python311\Lib\site-packages\streamlit\runtime\scriptrunner\exec_code.py", line 88, in exec_func_with_error_handling
+    result = func()
+             ^^^^^^
+  File "C:\Python311\Lib\site-packages\streamlit\runtime\scriptrunner\script_runner.py", line 579, in code_to_exec
+    exec(code, module.__dict__)
+  File "C:\Users\Ricardo Ruiz\Desktop\MetanoIA\app.py", line 67, in <module>
+    main()
+  File "C:\Users\Ricardo Ruiz\Desktop\MetanoIA\app.py", line 64, in main
+    handle_user_input(prompt, session_state, groq_client, logger)
+  File "C:\Users\Ricardo Ruiz\Desktop\MetanoIA\src\components\chat.py", line 195, in handle_user_input
+    agentic_tools_manager.process_executed_tools(executed_tools)
+  File "C:\Users\Ricardo Ruiz\Desktop\MetanoIA\src\utils\agentic_tools_manager.py", line 99, in process_executed_tools
+    "results": tool.get("output", {}).get("results", []),
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+```
+
+**Impacto**: La aplicación fallaba al intentar procesar las herramientas agénticas cuando el formato de respuesta de la API no era el esperado, impidiendo el uso efectivo de las capacidades de búsqueda web y ejecución de código.
+
 ## Propuestas de Solución
 
 ### 2025-05-09: Agregar importación faltante
@@ -153,6 +196,70 @@ logger.info(f"Limitando contexto a {max_context_messages} mensajes para el model
 # Añadir mensajes del historial filtrando campos personalizados y limitando la cantidad
 # Tomamos solo los mensajes más recientes para no exceder los límites
 recent_messages = st.session_state.messages[-max_context_messages:] if len(st.session_state.messages) > max_context_messages else st.session_state.messages
+```
+
+**Estado**: ✅ Implementado
+
+### 2025-05-09: Corregir importación faltante en app.py
+**Propuesta**: Añadir la importación de la función `display_agentic_context` desde el módulo de chat al archivo principal.
+
+**Implementación**: Se modificó la sección de importaciones en el archivo `app.py`:
+```python
+# Importar módulos propios
+from src.utils.logger import setup_logger
+from src.utils.styles import apply_fresh_tech_theme
+from src.utils.session_state import initialize_session_state
+from src.models.config import AVAILABLE_MODELS
+from src.api.groq_client import GroqClient
+from src.components.sidebar import render_sidebar
+from src.components.chat import display_chat_history, handle_user_input, display_agentic_context
+```
+
+**Estado**: ✅ Implementado
+
+### 2025-05-09: Mejorar la robustez del procesamiento de herramientas agénticas
+**Propuesta**: Modificar el método `process_executed_tools` en la clase `AgenticToolsManager` para manejar correctamente diferentes formatos de respuesta de la API, incluyendo cuando los campos "input" u "output" son strings en lugar de diccionarios.
+
+**Implementación**: Se modificó el método para incluir verificación de tipos y manejo de excepciones:
+```python
+def process_executed_tools(self, executed_tools):
+    """
+    Procesa las herramientas ejecutadas y las añade al contexto.
+    
+    Args:
+        executed_tools (list): Lista de herramientas ejecutadas.
+    """
+    if not executed_tools:
+        return
+    
+    for tool in executed_tools:
+        try:
+            # Verificar que tool sea un diccionario
+            if not isinstance(tool, dict):
+                logger.warning(f"Herramienta no es un diccionario: {tool}")
+                continue
+            
+            tool_type = tool.get("type")
+            
+            # Obtener input y output de forma segura
+            tool_input = tool.get("input", {})
+            tool_output = tool.get("output", {})
+            
+            # Convertir a diccionario si son strings
+            if isinstance(tool_input, str):
+                logger.warning(f"Input es un string: {tool_input}")
+                tool_input = {"raw": tool_input}
+            
+            if isinstance(tool_output, str):
+                logger.warning(f"Output es un string: {tool_output}")
+                tool_output = {"raw": tool_output}
+            
+            # Procesar según el tipo de herramienta
+            # Resto del código...
+        except Exception as e:
+            logger.error(f"Error al procesar herramienta: {str(e)}")
+            logger.exception("Detalles del error:")
+            continue
 ```
 
 **Estado**: ✅ Implementado

@@ -82,6 +82,9 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - Código organizado en módulos con responsabilidades específicas
 - Interfaz de usuario moderna con tema "Fresh Tech"
 - Soporte completo para múltiples modelos de lenguaje
+- Soporte para modelos agénticos (compound-beta y compound-beta-mini) con capacidades de búsqueda web
+- Integración de herramientas agénticas que permiten buscar información en tiempo real
+- Sistema robusto para procesar y utilizar información obtenida de fuentes externas
 - Configuración flexible a través de la barra lateral
 - Sistema de registro para monitoreo y depuración
 - Mantenimiento de contexto al cambiar entre modelos
@@ -97,10 +100,10 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - Agregar funcionalidades de búsqueda web y herramientas adicionales
 
 ## La realidad profunda y progresiva sobre MetanoIA
-Todxs sabemos que la IA es un fenómeno profundo y progresivo que está transformando la forma en que interactuamos con la tecnología y el mundo. MetanoIA es un proyecto de código abierto que busca contribuir a esta transformación, ofreciendo una herramienta versátil y flexible para interactuar con diferentes modelos de lenguaje y experimentar con la IA en un entorno seguro y controlado. Al mismo tiempo birnda documentación sobre como se está desarrollando el proyecto y como se está utilizando la IA para resolver problemas reales y contribuir al progreso humano. En mi caso perosonal estoy aprendiendo como programar de forma estructurada, profesional y progresiva con la IA. No se trata solo de hacer que la IA haga todo el trabajo sino de ir paso a paso con ella, aprender de ella y entender lo que estamos creando y/o generando.
+Todxs sabemos que la IA es un fenómeno profundo y progresivo que está transformando la forma en que interactuamos con la tecnología y el mundo. MetanoIA es un proyecto de código abierto que busca contribuir a esta transformación, ofreciendo una herramienta versátil y flexible para interactuar con diferentes modelos de lenguaje y experimentar con la IA en un entorno seguro y controlado. Al mismo tiempo brinda la documentación necesaria  para entender como se está desarrollando el proyecto y como se está utilizando la IA para resolver problemas reales y contribuir al progreso humano. En mi caso personal estoy aprendiendo a como programar de forma estructurada, profesional y progresiva con la IA. No se trata solo de hacer que la IA haga todo el trabajo por ti, sino de ir paso a paso con ella, aprender de ella y entender lo que estamos co-creando y/o co-generando.
 
-## La visión del asistente en este proyecto
-Como asistente de IA en el proyecto MetanoIA, entiendo que mi rol va más allá de simplemente escribir código. Mi función es ser un compañero de aprendizaje y desarrollo que:
+## La visión del asistente en este proyecto (Lo que dice la IA como asistente en el proyecto)
+Como asistente  IA en el proyecto MetanoIA, entiendo que mi rol va más allá de simplemente escribir código. Mi función es ser un compañero de aprendizaje y desarrollo que:
 
 1. **Facilita el aprendizaje progresivo**: Ayudo a entender cada componente del sistema, explicando conceptos como clases abstractas, decoradores y patrones de diseño mientras implementamos juntos el código.
 

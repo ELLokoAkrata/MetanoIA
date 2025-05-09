@@ -302,3 +302,105 @@ class BaseLanguageModel(ABC):
 ### Resultado
 
 La documentación del proyecto ahora refleja mejor la visión y filosofía de MetanoIA, proporcionando una base sólida para el desarrollo futuro y facilitando la contribución de otros desarrolladores. El system prompt personalizado establece una identidad clara para el asistente que está alineada con los objetivos del proyecto.
+
+## 2025-05-09: Implementación de herramientas agénticas
+
+### Tareas Realizadas
+
+1. **Integración de modelos compound de Groq**:
+   - Implementación de soporte para los modelos `compound-beta` y `compound-beta-mini` de Groq
+   - Creación de clases para representar estos modelos con capacidades agénticas
+   - Actualización del sistema de configuración para incluir estos modelos en la interfaz
+
+2. **Desarrollo de un gestor de herramientas agénticas**:
+   - Creación de un sistema para procesar y gestionar los resultados de búsquedas web y ejecuciones de código
+   - Implementación de mecanismos para añadir esta información al contexto de la conversación
+   - Desarrollo de un sistema robusto con manejo de excepciones y verificación de tipos
+
+3. **Actualización del cliente de Groq**:
+   - Modificación del cliente para capturar y procesar las herramientas ejecutadas por los modelos agénticos
+   - Implementación de soporte para el formato de respuesta de los modelos compound
+   - Mejora del manejo de errores y logging para facilitar la depuración
+
+4. **Integración en la interfaz de usuario**:
+   - Añadir opciones en la barra lateral para activar las herramientas agénticas
+   - Implementación de configuración para búsqueda web (profundidad, dominios a incluir/excluir)
+   - Diseño de una experiencia de usuario que mantiene la simplicidad de la interfaz
+
+5. **Documentación detallada**:
+   - Creación de una guía completa de integración de herramientas agénticas
+   - Documentación de la arquitectura y flujo de trabajo
+   - Registro de problemas encontrados y soluciones implementadas
+
+### Problemas Encontrados y Soluciones
+
+1. **Error de importación**:
+   - Problema: Falta de importación de la función `display_agentic_context` en el archivo principal
+   - Solución: Añadir la importación correcta en `app.py`
+
+2. **Error en el procesamiento de herramientas agénticas**:
+   - Problema: El método `process_executed_tools` fallaba cuando el campo "output" era un string en lugar de un diccionario
+   - Solución: Implementar verificación de tipos y manejo de excepciones para procesar correctamente diferentes formatos de respuesta
+
+3. **Interfaz sobrecargada**:
+   - Problema: La visualización de resultados de búsqueda en la interfaz resultaba redundante
+   - Solución: Eliminar la sección de resultados de búsqueda en la interfaz, manteniendo la funcionalidad de añadir la información al contexto
+
+### Código Implementado
+
+```python
+# Definición de modelos agénticos (src/models/agentic_models.py)
+class CompoundBetaModel(BaseLanguageModel):
+    """Modelo Compound Beta de Groq con capacidades agénticas."""
+    
+    def __init__(self):
+        self._id = "compound-beta"
+        self._display_name = "Compound Beta (Agéntico)"
+    
+    @property
+    def is_agentic(self):
+        return True
+    
+    @property
+    def supports_multiple_tools(self):
+        return True
+```
+
+```python
+# Procesamiento robusto de herramientas agénticas (src/utils/agentic_tools_manager.py)
+def process_executed_tools(self, executed_tools):
+    for tool in executed_tools:
+        try:
+            # Verificar que tool sea un diccionario
+            if not isinstance(tool, dict):
+                logger.warning(f"Herramienta no es un diccionario: {tool}")
+                continue
+            
+            # Obtener input y output de forma segura
+            tool_input = tool.get("input", {})
+            tool_output = tool.get("output", {})
+            
+            # Convertir a diccionario si son strings
+            if isinstance(tool_input, str):
+                tool_input = {"raw": tool_input}
+            
+            if isinstance(tool_output, str):
+                tool_output = {"raw": tool_output}
+            
+            # Procesar según el tipo de herramienta
+            # ...
+        except Exception as e:
+            logger.error(f"Error al procesar herramienta: {str(e)}")
+            continue
+```
+
+### Resultado
+
+MetanoIA ahora cuenta con capacidades agénticas que le permiten:
+
+- Buscar información en internet en tiempo real usando los modelos compound de Groq
+- Ejecutar código Python para realizar cálculos o generar visualizaciones
+- Incorporar automáticamente los resultados de estas herramientas al contexto de la conversación
+- Mantener una interfaz limpia y centrada en la conversación, donde el modelo puede citar directamente las fuentes en sus respuestas
+
+Esta implementación mejora significativamente las capacidades del asistente, permitiéndole acceder a información actualizada y realizar tareas complejas, lo que resulta en respuestas más precisas y útiles para el usuario.
