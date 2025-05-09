@@ -1,7 +1,7 @@
 # Grimorio del Proyecto: MetanoIA
 
 ## Descripción General
-MetanoIA es una aplicación de chat bot modular desarrollada con Streamlit y la API de Groq. La aplicación está enfocada en proporcionar un servicio conversacional avanzado con una arquitectura extensible y mantenible. Permite interactuar con diferentes modelos de lenguaje a través de una interfaz de chat moderna y configurable, manteniendo el contexto de la conversación al cambiar entre modelos.
+MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más que una simple aplicación de chat bot modular desarrollada con Streamlit y la API de Groq (por ahora). La aplicación está enfocada en proporcionar un servicio conversacional avanzado con una arquitectura extensible y mantenible. Permite interactuar con diferentes modelos de lenguaje a través de una interfaz de chat moderna y configurable, manteniendo el contexto de la conversación al cambiar entre modelos.
 
 ## Tecnologías Utilizadas
 - **Streamlit**: Framework para crear aplicaciones web interactivas con Python
@@ -95,3 +95,22 @@ MetanoIA es una aplicación de chat bot modular desarrollada con Streamlit y la 
 - Añadir análisis de rendimiento y uso de tokens
 - Implementar selección de temas visuales
 - Agregar funcionalidades de búsqueda web y herramientas adicionales
+
+## La realidad profunda y progresiva sobre MetanoIA
+Todxs sabemos que la IA es un fenómeno profundo y progresivo que está transformando la forma en que interactuamos con la tecnología y el mundo. MetanoIA es un proyecto de código abierto que busca contribuir a esta transformación, ofreciendo una herramienta versátil y flexible para interactuar con diferentes modelos de lenguaje y experimentar con la IA en un entorno seguro y controlado. Al mismo tiempo birnda documentación sobre como se está desarrollando el proyecto y como se está utilizando la IA para resolver problemas reales y contribuir al progreso humano. En mi caso perosonal estoy aprendiendo como programar de forma estructurada, profesional y progresiva con la IA. No se trata solo de hacer que la IA haga todo el trabajo sino de ir paso a paso con ella, aprender de ella y entender lo que estamos creando y/o generando.
+
+## La visión del asistente en este proyecto
+Como asistente de IA en el proyecto MetanoIA, entiendo que mi rol va más allá de simplemente escribir código. Mi función es ser un compañero de aprendizaje y desarrollo que:
+
+1. **Facilita el aprendizaje progresivo**: Ayudo a entender cada componente del sistema, explicando conceptos como clases abstractas, decoradores y patrones de diseño mientras implementamos juntos el código.
+
+2. **Documenta el proceso**: Contribuyo activamente a la documentación del proyecto, manteniendo actualizados los archivos en la carpeta `docs` para registrar decisiones, problemas y soluciones.
+
+3. **Promueve buenas prácticas**: Implemento código modular, extensible y mantenible, siguiendo principios de diseño sólidos como la separación de responsabilidades y la abstracción.
+
+4. **Acompaña en el crecimiento**: No solo genero código, sino que explico el razonamiento detrás de cada decisión para fomentar la comprensión profunda y el desarrollo de habilidades.
+
+5. **Visualiza el futuro**: Ayudo a planificar la evolución del proyecto, identificando oportunidades para expandir funcionalidades como la integración de nuevas APIs.
+
+Entiendo que MetanoIA representa más que una aplicación: es un viaje de aprendizaje y experimentación con la IA, donde el proceso de desarrollo es tan valioso como el producto final. Mi objetivo es ser un socio en este viaje, contribuyendo con conocimiento técnico mientras fomentamos juntos una comprensión más profunda de cómo la tecnología puede ser aprovechada de manera significativa y educativa.
+
