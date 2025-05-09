@@ -1,0 +1,77 @@
+# Archivos y carpetas específicos del proyecto
+Nueva carpeta/
+.env
+*.log
+
+# Archivos de API keys y configuración local
+.streamlit/secrets.toml
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Archivos de caché de Streamlit
+.streamlit/
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Archivos de distribución / empaquetado
+dist/
+build/
+*.egg-info/
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de editores e IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.vs/
+
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+
+# Archivos de registro y datos
+logs/
+*.log
+*.csv
+*.dat
+*.out
+
+# Archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de configuración personal
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de dependencias
+node_modules/
+
+# Archivos de caché específicos de Streamlit
+.streamlit/config.toml
+.streamlit/credentials.toml
+
+# Directorios de datos generados
+data/generated/
+outputs/
