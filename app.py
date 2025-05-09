@@ -14,7 +14,7 @@ from src.utils.session_state import initialize_session_state
 from src.models.config import AVAILABLE_MODELS
 from src.api.groq_client import GroqClient
 from src.components.sidebar import render_sidebar
-from src.components.chat import display_chat_history, handle_user_input
+from src.components.chat import display_chat_history, handle_user_input, display_agentic_context
 
 # Configuración de la página
 st.set_page_config(

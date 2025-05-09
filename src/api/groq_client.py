@@ -137,10 +137,11 @@ class GroqClient(BaseAPIClient):
             callback (callable, optional): Función de callback para cada fragmento de respuesta.
             
         Returns:
-            str: Respuesta completa generada.
+            dict: Diccionario con la respuesta completa generada y las herramientas ejecutadas.
+                 Formato: {"content": str, "executed_tools": list}
         """
         if not self.is_configured():
-            return "Error: API no configurada. Por favor, proporciona una clave API."
+            return {"content": "Error: API no configurada. Por favor, proporciona una clave API.", "executed_tools": []}
         
         try:
             if self.logger:
@@ -161,23 +162,40 @@ class GroqClient(BaseAPIClient):
                 self.logger.info("Conexión establecida, comenzando streaming...")
             
             full_response = ""
+            executed_tools = []
             chunk_count = 0
             
             for chunk in stream:
                 chunk_count += 1
+                
+                # Procesar contenido del mensaje
                 if hasattr(chunk.choices[0].delta, "content") and chunk.choices[0].delta.content is not None:
                     content = chunk.choices[0].delta.content
                     full_response += content
                     
                     if callback:
                         callback(full_response)
+                
+                # Procesar herramientas ejecutadas
+                if hasattr(chunk.choices[0].delta, "executed_tools") and chunk.choices[0].delta.executed_tools:
+                    # Convertir a diccionario para facilitar el manejo
+                    for tool in chunk.choices[0].delta.executed_tools:
+                        tool_dict = tool.model_dump() if hasattr(tool, "model_dump") else tool
+                        executed_tools.append(tool_dict)
+                        if self.logger:
+                            self.logger.info(f"Herramienta ejecutada: {tool_dict.get('type', 'desconocida')}")
             
             elapsed_time = time.time() - start_time
             
             if self.logger:
                 self.logger.info(f"Streaming completado: {chunk_count} chunks recibidos en {elapsed_time:.2f} segundos")
+                if executed_tools:
+                    self.logger.info(f"Herramientas ejecutadas: {len(executed_tools)}")
             
-            return full_response
+            return {
+                "content": full_response,
+                "executed_tools": executed_tools
+            }
         except Exception as e:
             error_msg = f"Error al llamar a la API: {str(e)}"
             
@@ -185,4 +203,7 @@ class GroqClient(BaseAPIClient):
                 self.logger.error(error_msg)
                 self.logger.exception("Detalles del error:")
             
-            return error_msg
+            return {
+                "content": error_msg,
+                "executed_tools": []
+            }
