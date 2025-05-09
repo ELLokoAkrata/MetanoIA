@@ -1,21 +1,29 @@
 # MetanoIA
 
-Un chatbot modular avanzado desarrollado con Streamlit y la API de Groq, que permite interactuar con diferentes modelos de lenguaje a través de una interfaz moderna y configurable.
+MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plataforma modular y extensible desarrollada con Streamlit y la API de Groq (inicialmente), que permite interactuar con diferentes modelos de lenguaje a través de una interfaz moderna y configurable. El proyecto busca ser un espacio de aprendizaje y experimentación con la IA, documentando el proceso de desarrollo y fomentando buenas prácticas de programación.
 
 ## Características
 
-- Interfaz con tema "Fresh Tech" con gradientes y efectos visuales modernos
-- Soporte para múltiples modelos de Groq:
+### Interfaz y Experiencia de Usuario
+- Interfaz moderna con tema "Fresh Tech" con gradientes y efectos visuales
+- Configuración en barra lateral para personalizar la experiencia
+- Streaming de respuestas en tiempo real
+- Persistencia de estado entre sesiones
+
+### Soporte para Modelos de IA
+- Integración con múltiples modelos de Groq:
   - DeepSeek-r1-distill-llama-70b
   - Meta-llama/llama-4-maverick-17b-128e-instruct
   - Meta-llama/llama-4-scout-17b-16e-instruct
   - Qwen-qwq-32b
-- Configuración en barra lateral para seleccionar modelos y parámetros
-- Sistema de registro (logging) que muestra información detallada en terminal
-- Streaming de respuestas en tiempo real
-- Persistencia de estado usando st.session_state
-- Caché de respuestas usando @st.cache_data
-- Manejo de errores y excepciones
+- Arquitectura preparada para integrar otros proveedores de API
+
+### Arquitectura Modular
+- Diseño basado en clases abstractas para facilitar extensiones
+- Separación clara de responsabilidades
+- Sistema de registro (logging) detallado
+- Caché de respuestas para optimizar rendimiento
+- Manejo robusto de errores y excepciones
 - Limitación dinámica del contexto según el modelo
 
 ## Estructura del Proyecto
@@ -91,10 +99,24 @@ streamlit run app.py
 
 El proyecto está diseñado para ser fácilmente extensible:
 
-- Para agregar nuevos modelos: modifica `src/models/config.py`
-- Para agregar nuevas APIs: crea un nuevo cliente en `src/api/`
+- Para agregar nuevos modelos: modifica `src/models/config.py` y crea clases en `src/models/`
+- Para agregar nuevas APIs: crea un nuevo cliente en `src/api/` que herede de `BaseAPIClient`
 - Para agregar nuevas herramientas: crea nuevos componentes en `src/components/`
+
+## Filosofía del Proyecto
+
+MetanoIA representa más que una aplicación técnica; es un viaje de aprendizaje y experimentación con la IA donde:
+
+- El proceso de desarrollo es tan valioso como el producto final
+- Se documenta cada paso del camino para facilitar el aprendizaje
+- Se promueve la comprensión profunda de los conceptos de programación
+- Se busca crear una herramienta que contribuya al progreso y entendimiento de la IA
 
 ## Documentación
 
-Para más detalles sobre el desarrollo del proyecto, consulta los archivos en la carpeta `docs/`.
+El proyecto mantiene una documentación detallada en la carpeta `docs/`:
+
+- `process.md`: Registro cronológico del proceso de desarrollo
+- `grimorio-proyecto.md`: Visión general y detalles técnicos del proyecto
+- `problemas_y_propuestas.md`: Registro de desafíos y sus soluciones
+- `integracion_apis.md`: Guía para integrar nuevos proveedores de API
