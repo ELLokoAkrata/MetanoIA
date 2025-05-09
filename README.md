@@ -21,7 +21,7 @@ Un chatbot modular avanzado desarrollado con Streamlit y la API de Groq, que per
 ## Estructura del Proyecto
 
 ```
-streamlit-apps/
+MetanoIA/
 ├── app.py                  # Archivo principal de la aplicación
 ├── chat_bot.py             # Versión anterior (monolítica) de la aplicación
 ├── docs/                   # Documentación del proyecto
@@ -59,8 +59,8 @@ streamlit-apps/
 
 1. Clona este repositorio:
 ```bash
-git clone <url-del-repositorio>
-cd streamlit-apps
+git clone https://github.com/Ellokoakarata/MetanoIA.git
+cd MetanoIA
 ```
 
 2. Instala las dependencias:
