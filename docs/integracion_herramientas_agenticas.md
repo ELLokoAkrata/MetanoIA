@@ -685,3 +685,5 @@ prompt = "Crea un gráfico de barras con matplotlib que muestre las ventas mensu
 La integración de herramientas agénticas en MetanoIA permite ampliar significativamente las capacidades de la aplicación, permitiendo a los modelos acceder a información en tiempo real y ejecutar código. Esta funcionalidad mejora la experiencia del usuario al proporcionar respuestas más precisas y actualizadas, y al permitir la ejecución de tareas complejas directamente desde la interfaz de chat.
 
 La arquitectura modular de MetanoIA facilita esta integración, manteniendo la coherencia con el diseño existente y permitiendo futuras extensiones a medida que Groq añada nuevas herramientas agénticas.
+
+**Estado**: ✅ Implementado

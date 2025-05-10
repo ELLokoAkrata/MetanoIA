@@ -2,6 +2,11 @@
 
 ## Problemas Identificados
 
+### 2025-05-10: Inconsistencia en el cambio de modelo
+**Problema**: Al cambiar de modelo en la interfaz, en ocasiones el cambio no se aplica realmente y se sigue utilizando el modelo anterior, a pesar de que la interfaz muestra el nuevo modelo seleccionado.
+
+**Impacto**: Genera confusión en los usuarios que creen estar utilizando un modelo específico cuando en realidad están usando otro. Esto afecta la experiencia de usuario y la confiabilidad de la aplicación, especialmente cuando se están comparando diferentes modelos.
+
 ### 2025-05-09: Error de importación en chat_bot.py
 **Problema**: Se detectó un error en el archivo `chat_bot.py` donde se intentaba utilizar el módulo `os` sin haberlo importado previamente, lo que generaba el siguiente error:
 ```
@@ -260,6 +265,66 @@ def process_executed_tools(self, executed_tools):
             logger.error(f"Error al procesar herramienta: {str(e)}")
             logger.exception("Detalles del error:")
             continue
+```
+
+**Estado**: ✅ Implementado
+
+## Propuestas de Solución
+
+### 2025-05-10: Corregir inconsistencia en el cambio de modelo
+**Propuesta**: Implementar un mecanismo más robusto para el cambio de modelo que garantice que el modelo seleccionado se aplique correctamente, incluyendo una verificación explícita y un reinicio de la sesión cuando sea necesario.
+
+**Implementación**: 
+Después de analizar el código, se identificaron dos problemas principales:
+
+1. **Problema de actualización del estado**: Aunque el cambio de modelo se registra en `session_state.context["model"]`, no se fuerza un reinicio completo de la aplicación, lo que puede causar que el cambio no se aplique correctamente.
+
+2. **Problema con el widget de selección**: El widget de selección de modelo no siempre refleja correctamente el modelo actual debido a cómo Streamlit maneja el estado de los widgets.
+
+Se implementaron las siguientes soluciones:
+
+1. **Uso de key dinámica para el selectbox**: Se modificó el código para usar una key dinámica basada en el modelo actual, forzando a Streamlit a recrear el widget cuando cambia el modelo:
+
+```python
+# En src/components/sidebar.py
+selected_model = st.selectbox(
+    "Selecciona un modelo",
+    options=list(AVAILABLE_MODELS.keys()),
+    format_func=lambda x: AVAILABLE_MODELS[x],
+    index=list(AVAILABLE_MODELS.keys()).index(session_state.context["model"]) 
+        if session_state.context["model"] in AVAILABLE_MODELS else 0,
+    key=f"model_select_{session_state.context['model']}"  # Key dinámica basada en el modelo actual
+)
+```
+
+2. **Forzar reinicio de la aplicación**: Se modificó la función `render_sidebar` para devolver `True` cuando cambia el modelo, lo que indica a la aplicación principal que debe reiniciarse:
+
+```python
+# En src/components/sidebar.py
+if (selected_model != session_state.context["model"]):
+    logger.info(f"Cambio de modelo: {session_state.context['model']} -> {selected_model}")
+    session_state.context["model"] = selected_model
+    config_changed = True  # Esto hará que la aplicación se reinicie
+```
+
+3. **Verificación explícita del modelo antes de cada generación**: Se añadió código en `handle_user_input` para verificar que el modelo seleccionado sea el que realmente se está utilizando:
+
+```python
+# En src/components/chat.py
+def handle_user_input(prompt, session_state, groq_client, logger):
+    # Verificar y registrar el modelo actual
+    current_model = session_state.context["model"]
+    model_obj = get_model(current_model)
+    logger.info(f"Usando modelo: {current_model} ({get_model_display_name(current_model)})")
+    
+    # Resto del código...
+```
+
+4. **Indicador visual del modelo en uso**: Se añadió un indicador claro en la interfaz que muestra qué modelo se está utilizando actualmente:
+
+```python
+# En app.py
+st.markdown(f"**Modelo actual:** {get_model_display_name(session_state.context['model'])}")
 ```
 
 **Estado**: ✅ Implementado
