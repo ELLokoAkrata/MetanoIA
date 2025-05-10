@@ -174,7 +174,12 @@ def handle_user_input(prompt, session_state, groq_client, logger):
     model_obj = get_model(current_model)
     is_agentic_model = hasattr(model_obj, "is_agentic") and model_obj.is_agentic
     
-    logger.info(f"Usando modelo seleccionado: {current_model} ({get_model_display_name(current_model)})")
+    # Verificación explícita del modelo actual
+    logger.info(f"Verificando modelo seleccionado: {current_model} ({get_model_display_name(current_model)})")
+    
+    # Mostrar información del modelo que se está utilizando
+    with st.chat_message("system"):
+        st.info(f"Generando respuesta con {get_model_display_name(current_model)}...")
     
     # Agregar mensaje del usuario al historial
     session_state.messages.append({"role": "user", "content": prompt})

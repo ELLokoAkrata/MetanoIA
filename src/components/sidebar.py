@@ -34,7 +34,7 @@ def render_sidebar(session_state, groq_client, logger):
         # Selección de modelo
         st.subheader("Modelo")
         
-        # Usar key para forzar la recreación del widget cuando cambia el modelo
+        # Usar key dinámica para forzar la recreación del widget cuando cambia el modelo
         selected_model = st.selectbox(
             "Selecciona un modelo",
             options=list(AVAILABLE_MODELS.keys()),
@@ -43,6 +43,12 @@ def render_sidebar(session_state, groq_client, logger):
                 if session_state.context["model"] in AVAILABLE_MODELS else 0,
             key=f"model_select_{session_state.context['model']}"
         )
+        
+        # Mostrar información sobre el modelo actual
+        if selected_model == session_state.context["model"]:
+            st.success(f"Usando modelo: {AVAILABLE_MODELS[selected_model]}")
+        else:
+            st.warning(f"Cambiando de {AVAILABLE_MODELS[session_state.context['model']]} a {AVAILABLE_MODELS[selected_model]}...")
         
         # Verificar si el modelo seleccionado es agéntico
         model_obj = get_model(selected_model)
@@ -135,6 +141,11 @@ def render_sidebar(session_state, groq_client, logger):
             logger.info(f"Cambio de modelo: {session_state.context['model']} -> {selected_model}")
             session_state.context["model"] = selected_model
             config_changed = True
+            
+            # Forzar reinicio inmediato cuando cambia el modelo
+            # Esto garantiza que el cambio se aplique correctamente
+            logger.info("Forzando reinicio de la aplicación para aplicar el cambio de modelo")
+            st.rerun()
         
         if (temperature != session_state.context["temperature"] or
             max_tokens != session_state.context["max_tokens"] or

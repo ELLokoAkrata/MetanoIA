@@ -41,6 +41,10 @@ def main():
     st.title("🤖 MetanoIA")
     st.markdown("Chat bot modular usando Streamlit y la API de Groq")
     
+    # Mostrar indicador del modelo actual
+    from src.models.config import get_model_display_name
+    st.markdown(f"**Modelo actual:** {get_model_display_name(session_state.context['model'])}")
+    
     # Renderizar la barra lateral
     config_changed = render_sidebar(session_state, groq_client, logger)
     
