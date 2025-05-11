@@ -31,6 +31,15 @@ build/
 
 # Archivos de sistema operativo
 .DS_Store
+
+# Imágenes temporales
+tmp_images/
+*.tmp.jpg
+*.tmp.jpeg
+*.tmp.png
+*.resized.jpg
+*.resized.jpeg
+*.resized.png
 Thumbs.db
 desktop.ini
 
