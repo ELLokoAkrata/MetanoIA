@@ -2,8 +2,11 @@
 Módulo para la barra lateral de la aplicación.
 """
 import streamlit as st
+import os
+import uuid
 from src.models.config import AVAILABLE_MODELS, get_model
 from src.utils.agentic_tools_manager import AgenticToolsManager
+from src.utils.image_processor import resize_image, encode_image_to_base64, save_uploaded_image
 
 def render_sidebar(session_state, groq_client, logger):
     """
@@ -50,9 +53,10 @@ def render_sidebar(session_state, groq_client, logger):
         else:
             st.warning(f"Cambiando de {AVAILABLE_MODELS[session_state.context['model']]} a {AVAILABLE_MODELS[selected_model]}...")
         
-        # Verificar si el modelo seleccionado es agéntico
+        # Verificar si el modelo seleccionado es agéntico o soporta visión
         model_obj = get_model(selected_model)
         is_agentic_model = hasattr(model_obj, "is_agentic") and model_obj.is_agentic
+        supports_vision = hasattr(model_obj, "supports_vision") and model_obj.supports_vision
         
         # Configuración de herramientas agénticas
         if is_agentic_model:
@@ -64,6 +68,106 @@ def render_sidebar(session_state, groq_client, logger):
             value=session_state.context.get("enable_agentic", False),
             help="Permite que el modelo busque información en internet y ejecute código Python."
         )
+        
+        # Configuración de procesamiento de imágenes
+        if supports_vision:
+            st.info("Has seleccionado un modelo con capacidades de visión que puede analizar imágenes.")
+            
+            # Activar/desactivar visión
+            enable_vision = st.checkbox(
+                "Activar procesamiento de imágenes",
+                value=session_state.context.get("enable_vision", False),
+                help="Permite que el modelo analice imágenes y extraiga información de ellas."
+            )
+            
+            # Opciones de procesamiento de imágenes
+            if enable_vision:
+                st.subheader("Procesamiento de Imágenes")
+                
+                # Cargar imagen
+                uploaded_file = st.file_uploader(
+                    "Cargar imagen", 
+                    type=["jpg", "jpeg", "png"],
+                    help="Sube una imagen para que el modelo la analice."
+                )
+                
+                if uploaded_file is not None:
+                    # Mostrar la imagen
+                    st.image(uploaded_file, caption="Imagen cargada", width=300)
+                    
+                    # Guardar la imagen en el sistema de archivos
+                    image_id = str(uuid.uuid4())
+                    image_path = save_uploaded_image(uploaded_file, image_id)
+                    
+                    # Procesar la imagen
+                    col1, col2 = st.columns(2)
+                    
+                    if col1.button("Describir imagen"):
+                        try:
+                            # Redimensionar y codificar la imagen
+                            resized_image_path = resize_image(image_path)
+                            base64_image = encode_image_to_base64(resized_image_path)
+                            
+                            # Guardar en el contexto de sesión
+                            if "recent_images" not in session_state.image_context:
+                                session_state.image_context["recent_images"] = []
+                            
+                            # Añadir la imagen al contexto
+                            session_state.image_context["recent_images"].append({
+                                "id": image_id,
+                                "path": image_path,
+                                "base64": base64_image,
+                                "action": "describe",
+                                "processed": False
+                            })
+                            
+                            # Limitar el número de imágenes almacenadas
+                            if len(session_state.image_context["recent_images"]) > session_state.image_context["max_stored_images"]:
+                                # Eliminar la imagen más antigua y su archivo
+                                oldest_image = session_state.image_context["recent_images"].pop(0)
+                                if os.path.exists(oldest_image["path"]):
+                                    os.remove(oldest_image["path"])
+                            
+                            st.success("Imagen lista para ser analizada. Escribe un mensaje en el chat para obtener una descripción.")
+                            
+                        except Exception as e:
+                            st.error(f"Error al procesar la imagen: {str(e)}")
+                            logger.error(f"Error al procesar imagen: {str(e)}")
+                    
+                    if col2.button("Extraer texto (OCR)"):
+                        try:
+                            # Redimensionar y codificar la imagen
+                            resized_image_path = resize_image(image_path)
+                            base64_image = encode_image_to_base64(resized_image_path)
+                            
+                            # Guardar en el contexto de sesión
+                            if "recent_images" not in session_state.image_context:
+                                session_state.image_context["recent_images"] = []
+                            
+                            # Añadir la imagen al contexto
+                            session_state.image_context["recent_images"].append({
+                                "id": image_id,
+                                "path": image_path,
+                                "base64": base64_image,
+                                "action": "ocr",
+                                "processed": False
+                            })
+                            
+                            # Limitar el número de imágenes almacenadas
+                            if len(session_state.image_context["recent_images"]) > session_state.image_context["max_stored_images"]:
+                                # Eliminar la imagen más antigua y su archivo
+                                oldest_image = session_state.image_context["recent_images"].pop(0)
+                                if os.path.exists(oldest_image["path"]):
+                                    os.remove(oldest_image["path"])
+                            
+                            st.success("Imagen lista para extraer texto. Escribe un mensaje en el chat para obtener el texto extraído.")
+                            
+                        except Exception as e:
+                            st.error(f"Error al procesar la imagen: {str(e)}")
+                            logger.error(f"Error al procesar imagen: {str(e)}")
+        else:
+            # Si el modelo no soporta visión, desactivar la opción
+            enable_vision = False
         
         # Configuración de búsqueda web
         if enable_agentic:
@@ -150,13 +254,16 @@ def render_sidebar(session_state, groq_client, logger):
         if (temperature != session_state.context["temperature"] or
             max_tokens != session_state.context["max_tokens"] or
             system_prompt != session_state.context["system_prompt"] or
-            enable_agentic != session_state.context.get("enable_agentic", False)):
+            enable_agentic != session_state.context.get("enable_agentic", False) or
+            (supports_vision and enable_vision != session_state.context.get("enable_vision", False))):
             
-            logger.info(f"Cambio de parámetros: temperatura={temperature}, max_tokens={max_tokens}, enable_agentic={enable_agentic}")
+            logger.info(f"Cambio de parámetros: temperatura={temperature}, max_tokens={max_tokens}, enable_agentic={enable_agentic}, enable_vision={enable_vision if supports_vision else False}")
             session_state.context["temperature"] = temperature
             session_state.context["max_tokens"] = max_tokens
             session_state.context["system_prompt"] = system_prompt
             session_state.context["enable_agentic"] = enable_agentic
+            if supports_vision:
+                session_state.context["enable_vision"] = enable_vision
             config_changed = True
         
         # Botones de acción

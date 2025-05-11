@@ -27,7 +27,8 @@ class DeepSeekModel(BaseLanguageModel):
         return "Groq"
 
 class MetaMaverickModel(BaseLanguageModel):
-    """Implementación del modelo Meta Llama 4 Maverick de Groq."""
+    """Implementación del modelo Meta Llama 4 Maverick de Groq.
+    Este modelo soporta capacidades de visión para procesar imágenes."""
     
     @property
     def id(self):
@@ -48,9 +49,14 @@ class MetaMaverickModel(BaseLanguageModel):
     @property
     def provider(self):
         return "Groq"
+        
+    @property
+    def supports_vision(self):
+        return True
 
 class MetaScoutModel(BaseLanguageModel):
-    """Implementación del modelo Meta Llama 4 Scout de Groq."""
+    """Implementación del modelo Meta Llama 4 Scout de Groq.
+    Este modelo soporta capacidades de visión para procesar imágenes."""
     
     @property
     def id(self):
@@ -71,6 +77,10 @@ class MetaScoutModel(BaseLanguageModel):
     @property
     def provider(self):
         return "Groq"
+        
+    @property
+    def supports_vision(self):
+        return True
 
 class QwenModel(BaseLanguageModel):
     """Implementación del modelo Qwen de Groq."""

@@ -2,6 +2,7 @@
 Módulo para el componente de chat de la aplicación.
 """
 import streamlit as st
+import os
 from src.models.config import get_model_display_name, get_context_limit, get_model
 from src.utils.agentic_tools_manager import AgenticToolsManager
 
@@ -173,6 +174,7 @@ def handle_user_input(prompt, session_state, groq_client, logger):
     current_model = session_state.context["model"]
     model_obj = get_model(current_model)
     is_agentic_model = hasattr(model_obj, "is_agentic") and model_obj.is_agentic
+    supports_vision = hasattr(model_obj, "supports_vision") and model_obj.supports_vision
     
     # Verificación explícita del modelo actual
     logger.info(f"Verificando modelo seleccionado: {current_model} ({get_model_display_name(current_model)})")
@@ -196,6 +198,29 @@ def handle_user_input(prompt, session_state, groq_client, logger):
     if session_state.context.get("enable_agentic", False):
         agentic_tools_manager = AgenticToolsManager(session_state)
     
+    # Verificar si hay imágenes pendientes de procesar en el contexto
+    has_pending_image = False
+    pending_image = None
+    if session_state.context.get("enable_vision", False) and supports_vision:
+        if "image_context" in session_state and "recent_images" in session_state.image_context:
+            for img in session_state.image_context["recent_images"]:
+                if not img.get("processed", False):
+                    has_pending_image = True
+                    pending_image = img
+                    break
+    
+    # Preparar instrucciones específicas para la imagen si es necesario
+    image_instruction = ""
+    if has_pending_image and pending_image:
+        action = pending_image.get("action", "describe")
+        if action == "describe":
+            image_instruction = "Describe detalladamente la imagen que te muestro. Incluye todos los elementos visuales relevantes."
+        elif action == "ocr":
+            image_instruction = "Extrae todo el texto visible en la imagen. Organiza el texto de manera coherente, respetando la estructura original si es posible."
+        
+        # Marcar que estamos procesando esta imagen
+        logger.info(f"Procesando imagen {pending_image['id']} con acción: {action}")
+    
     # Mostrar respuesta del asistente
     with st.chat_message("assistant"):
         # Mostrar qué modelo se está usando
@@ -212,14 +237,49 @@ def handle_user_input(prompt, session_state, groq_client, logger):
             # Actualizar el contenido de la respuesta
             response_container.markdown(text)
         
-        # Generar respuesta
-        response = groq_client.generate_streaming_response(
-            model=current_model,
-            messages=api_messages,
-            temperature=session_state.context["temperature"],
-            max_tokens=session_state.context["max_tokens"],
-            callback=update_response
-        )
+        # Generar respuesta (con o sin imagen)
+        if has_pending_image and pending_image and session_state.context.get("enable_vision", False) and supports_vision:
+            # Si hay una imagen pendiente, usar la API con soporte de visión
+            logger.info(f"Generando respuesta con imagen usando modelo {current_model}")
+            
+            # Preparar datos de la imagen
+            image_data = {
+                "base64": pending_image["base64"]
+            }
+            
+            # Si hay una instrucción específica para la imagen, reemplazar el último mensaje del usuario
+            if image_instruction:
+                # Reemplazar el último mensaje del usuario en los mensajes de la API
+                for i in range(len(api_messages) - 1, -1, -1):
+                    if api_messages[i]["role"] == "user":
+                        api_messages[i]["content"] = image_instruction
+                        break
+            
+            # Generar respuesta con imagen
+            response = groq_client.generate_response_with_image(
+                model=current_model,
+                messages=api_messages,
+                image_data=image_data,
+                temperature=session_state.context["temperature"],
+                max_tokens=session_state.context["max_tokens"],
+                callback=update_response
+            )
+            
+            # Marcar la imagen como procesada
+            for img in session_state.image_context["recent_images"]:
+                if img["id"] == pending_image["id"]:
+                    img["processed"] = True
+                    break
+                    
+        else:
+            # Generar respuesta normal sin imagen
+            response = groq_client.generate_streaming_response(
+                model=current_model,
+                messages=api_messages,
+                temperature=session_state.context["temperature"],
+                max_tokens=session_state.context["max_tokens"],
+                callback=update_response
+            )
         
         # Procesar la respuesta (ahora puede ser un diccionario con content y executed_tools)
         if isinstance(response, dict):
@@ -235,24 +295,64 @@ def handle_user_input(prompt, session_state, groq_client, logger):
             model_info.empty()
             response_container.markdown(content)
             
-            # Agregar respuesta al historial con información del modelo usado y herramientas ejecutadas
-            session_state.messages.append({
+            # Preparar el mensaje para el historial
+            message_data = {
                 "role": "assistant", 
                 "content": content, 
                 "model_used": current_model,
                 "executed_tools": executed_tools
-            })
+            }
+            
+            # Si se procesó una imagen, añadir información sobre ella
+            if has_pending_image and pending_image:
+                message_data["image_processed"] = True
+                message_data["image_id"] = pending_image["id"]
+                message_data["image_action"] = pending_image["action"]
+                
+                # Guardar la descripción de la imagen en el contexto
+                if pending_image["action"] == "describe" and "image_descriptions" in session_state.image_context:
+                    session_state.image_context["image_descriptions"].append({
+                        "image_id": pending_image["id"],
+                        "description": content
+                    })
+                    
+                    # Limitar el número de descripciones almacenadas
+                    if len(session_state.image_context["image_descriptions"]) > session_state.image_context["max_stored_images"]:
+                        session_state.image_context["image_descriptions"].pop(0)
+            
+            # Agregar respuesta al historial
+            session_state.messages.append(message_data)
         else:
             # Compatibilidad con versiones anteriores (si response es un string)
             model_info.empty()
             response_container.markdown(response)
             
-            # Agregar respuesta al historial con información del modelo usado
-            session_state.messages.append({
+            # Preparar el mensaje para el historial
+            message_data = {
                 "role": "assistant", 
                 "content": response, 
                 "model_used": current_model
-            })
+            }
+            
+            # Si se procesó una imagen, añadir información sobre ella
+            if has_pending_image and pending_image:
+                message_data["image_processed"] = True
+                message_data["image_id"] = pending_image["id"]
+                message_data["image_action"] = pending_image["action"]
+                
+                # Guardar la descripción de la imagen en el contexto
+                if pending_image["action"] == "describe" and "image_descriptions" in session_state.image_context:
+                    session_state.image_context["image_descriptions"].append({
+                        "image_id": pending_image["id"],
+                        "description": response
+                    })
+                    
+                    # Limitar el número de descripciones almacenadas
+                    if len(session_state.image_context["image_descriptions"]) > session_state.image_context["max_stored_images"]:
+                        session_state.image_context["image_descriptions"].pop(0)
+            
+            # Agregar respuesta al historial
+            session_state.messages.append(message_data)
     
     # Ya no mostramos el contexto de herramientas agénticas en la interfaz
     # pero seguimos procesando la información para que el modelo pueda utilizarla

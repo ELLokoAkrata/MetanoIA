@@ -63,3 +63,13 @@ class BaseLanguageModel(ABC):
             str: Nombre del proveedor.
         """
         pass
+    
+    @property
+    def supports_vision(self):
+        """
+        Indica si el modelo soporta capacidades de visión.
+        
+        Returns:
+            bool: True si el modelo soporta visión, False en caso contrario.
+        """
+        return False

@@ -61,3 +61,21 @@ class BaseAPIClient(ABC):
             str: Respuesta completa generada.
         """
         pass
+        
+    @abstractmethod
+    def generate_response_with_image(self, model, messages, image_data, temperature, max_tokens, callback=None):
+        """
+        Genera una respuesta basada en texto e imagen.
+        
+        Args:
+            model (str): ID del modelo a utilizar.
+            messages (list): Lista de mensajes para la conversación.
+            image_data (dict): Datos de la imagen (URL o base64).
+            temperature (float): Temperatura para la generación.
+            max_tokens (int): Número máximo de tokens en la respuesta.
+            callback (callable, optional): Función de callback para cada fragmento de respuesta.
+            
+        Returns:
+            dict: Diccionario con la respuesta completa generada y metadatos.
+        """
+        pass
