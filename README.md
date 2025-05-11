@@ -1,6 +1,6 @@
 # MetanoIA
 
-MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plataforma modular y extensible desarrollada con Streamlit y la API de Groq (inicialmente), que permite interactuar con diferentes modelos de lenguaje a través de una interfaz moderna y configurable. El proyecto busca ser un espacio de aprendizaje y experimentación con la IA, documentando el proceso de desarrollo y fomentando buenas prácticas de programación.
+MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plataforma modular y extensible desarrollada con Streamlit y la API de Groq (inicialmente), que permite interactuar con diferentes modelos de lenguaje y visión a través de una interfaz moderna y configurable. El proyecto busca ser un espacio de aprendizaje y experimentación con la IA, documentando el proceso de desarrollo y fomentando buenas prácticas de programación.
 
 ## Características
 
@@ -9,12 +9,13 @@ MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plata
 - Configuración en barra lateral para personalizar la experiencia
 - Streaming de respuestas en tiempo real
 - Persistencia de estado entre sesiones
+- Carga y procesamiento de imágenes para modelos multimodales
 
 ### Soporte para Modelos de IA
 - Integración con múltiples modelos de Groq:
   - DeepSeek-r1-distill-llama-70b
-  - Meta-llama/llama-4-maverick-17b-128e-instruct
-  - Meta-llama/llama-4-scout-17b-16e-instruct
+  - Meta-llama/llama-4-maverick-17b-128e-instruct (con capacidades de visión)
+  - Meta-llama/llama-4-scout-17b-16e-instruct (con capacidades de visión)
   - Qwen-qwq-32b
 - Arquitectura preparada para integrar otros proveedores de API
 
@@ -25,6 +26,13 @@ MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plata
 - Caché de respuestas para optimizar rendimiento
 - Manejo robusto de errores y excepciones
 - Limitación dinámica del contexto según el modelo
+
+### Capacidades de Visión
+- Procesamiento y análisis de imágenes con modelos multimodales
+- Redimensionamiento automático de imágenes para cumplir con límites técnicos
+- Soporte para OCR (reconocimiento óptico de caracteres)
+- Análisis de contenido visual en contexto de conversación
+- Integración fluida entre contexto textual y visual
 
 ## Estructura del Proyecto
 
@@ -49,6 +57,7 @@ MetanoIA/
 │   │   └── config.py       # Configuración de modelos disponibles
 │   ├── utils/              # Utilidades generales
 │   │   ├── __init__.py
+│   │   ├── image_processor.py # Procesamiento de imágenes
 │   │   ├── logger.py       # Configuración del sistema de logging
 │   │   ├── session_state.py # Gestión del estado de la sesión
 │   │   └── styles.py       # Estilos y temas de la aplicación
@@ -61,7 +70,8 @@ MetanoIA/
 - Python 3.7+
 - Streamlit
 - Groq API
-- Bibliotecas adicionales: logging, time, datetime
+- PIL (Pillow) para procesamiento de imágenes
+- Bibliotecas adicionales: logging, time, datetime, base64, uuid, io
 
 ## Instalación
 
@@ -102,6 +112,7 @@ El proyecto está diseñado para ser fácilmente extensible:
 - Para agregar nuevos modelos: modifica `src/models/config.py` y crea clases en `src/models/`
 - Para agregar nuevas APIs: crea un nuevo cliente en `src/api/` que herede de `BaseAPIClient`
 - Para agregar nuevas herramientas: crea nuevos componentes en `src/components/`
+- Para extender capacidades de visión: modifica `src/utils/image_processor.py` y actualiza el cliente API correspondiente
 
 ## Filosofía del Proyecto
 
@@ -120,3 +131,6 @@ El proyecto mantiene una documentación detallada en la carpeta `docs/`:
 - `grimorio-proyecto.md`: Visión general y detalles técnicos del proyecto
 - `problemas_y_propuestas.md`: Registro de desafíos y sus soluciones
 - `integracion_apis.md`: Guía para integrar nuevos proveedores de API
+- `integracion_vision.md`: Documentación sobre la implementación de capacidades de visión
+- `manejo_contexto.md`: Explicación del sistema de manejo de contexto
+- `integracion_modelos.md`: Guía para integrar nuevos modelos
