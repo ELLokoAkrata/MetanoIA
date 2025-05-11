@@ -404,3 +404,115 @@ MetanoIA ahora cuenta con capacidades agénticas que le permiten:
 - Mantener una interfaz limpia y centrada en la conversación, donde el modelo puede citar directamente las fuentes en sus respuestas
 
 Esta implementación mejora significativamente las capacidades del asistente, permitiéndole acceder a información actualizada y realizar tareas complejas, lo que resulta en respuestas más precisas y útiles para el usuario.
+
+## 2025-05-10: Implementación de capacidades de visión
+
+### Tareas Realizadas
+
+1. **Extensión de la arquitectura base**:
+   - Actualización de la clase base `BaseAPIClient` para añadir el método abstracto `generate_response_with_image`
+   - Implementación de este método en `GroqClient` para procesar imágenes con modelos multimodales
+   - Actualización de la clase base `BaseLanguageModel` con la propiedad `supports_vision`
+
+2. **Implementación del procesador de imágenes**:
+   - Creación del módulo `image_processor.py` con funciones para redimensionar, validar y codificar imágenes
+   - Implementación de límites de tamaño y resolución según las restricciones de Groq (33MP, 4MB máximo)
+   - Optimización automática de imágenes mediante redimensionamiento y compresión
+
+3. **Actualización del estado de sesión**:
+   - Ampliación del estado de sesión para almacenar el contexto de imágenes
+   - Implementación de un sistema para mantener un historial limitado de imágenes recientes
+   - Almacenamiento de descripciones generadas para facilitar referencias futuras
+
+4. **Integración en la interfaz de usuario**:
+   - Actualización del sidebar para mostrar opciones de visión cuando se selecciona un modelo compatible
+   - Implementación de carga de imágenes con previsualización
+   - Botones para acciones rápidas (describir imagen, extraer texto)
+
+5. **Actualización del componente de chat**:
+   - Modificación de `handle_user_input` para detectar y procesar imágenes pendientes
+   - Integración con el contexto de la conversación para mantener la coherencia
+   - Mejora del manejo de errores y registro detallado
+
+6. **Documentación completa**:
+   - Actualización de `integracion_vision.md` para reflejar la implementación realizada
+   - Documentación de limitaciones técnicas y consideraciones de uso
+   - Planificación de mejoras futuras (integración con OpenAI y otros proveedores)
+
+### Código Implementado
+
+```python
+# Extensión de la clase base (src/api/base_client.py)
+@abstractmethod
+def generate_response_with_image(self, model, messages, image_data, temperature, max_tokens, callback=None):
+    """
+    Genera una respuesta basada en texto e imagen.
+    
+    Args:
+        model (str): ID del modelo a utilizar.
+        messages (list): Lista de mensajes para la conversación.
+        image_data (dict): Datos de la imagen (URL o base64).
+        temperature (float): Temperatura para la generación.
+        max_tokens (int): Número máximo de tokens en la respuesta.
+        callback (callable, optional): Función de callback para cada fragmento de respuesta.
+        
+    Returns:
+        dict: Diccionario con la respuesta completa generada y metadatos.
+    """
+    pass
+```
+
+```python
+# Procesamiento de imágenes (src/utils/image_processor.py)
+def resize_image(image_path, max_pixels=33177600, max_size_mb=4):
+    """
+    Redimensiona una imagen si excede el número máximo de píxeles o tamaño.
+    """
+    # Implementación que garantiza que las imágenes cumplan con los límites de Groq
+    # Redimensionamiento inteligente y compresión progresiva
+```
+
+```python
+# Integración en el sidebar (src/components/sidebar.py)
+# Configuración de procesamiento de imágenes
+if supports_vision:
+    st.info("Has seleccionado un modelo con capacidades de visión que puede analizar imágenes.")
+    
+    # Activar/desactivar visión
+    enable_vision = st.checkbox(
+        "Activar procesamiento de imágenes",
+        value=session_state.context.get("enable_vision", False),
+        help="Permite que el modelo analice imágenes y extraiga información de ellas."
+    )
+    
+    # Opciones de procesamiento de imágenes
+    if enable_vision:
+        st.subheader("Procesamiento de Imágenes")
+        uploaded_file = st.file_uploader("Cargar imagen", type=["jpg", "jpeg", "png"])
+        # Implementación de carga y procesamiento de imágenes
+```
+
+### Problemas Encontrados y Soluciones
+
+1. **Limitaciones de tamaño de imágenes**:
+   - Problema: Las imágenes grandes causaban errores en la API de Groq (límite de 4MB para base64)
+   - Solución: Implementación de redimensionamiento y compresión automática con calidad progresiva
+
+2. **Integración con modelos específicos**:
+   - Problema: Solo los modelos Meta Llama 4 Scout y Maverick soportan capacidades de visión
+   - Solución: Implementación de la propiedad `supports_vision` y verificación dinámica en la interfaz
+
+3. **Gestión del contexto de imágenes**:
+   - Problema: Necesidad de mantener el contexto de imágenes entre mensajes
+   - Solución: Extensión del estado de sesión con un sistema de seguimiento de imágenes procesadas
+
+### Resultado
+
+MetanoIA ahora cuenta con capacidades de visión que le permiten:
+
+- Analizar y describir imágenes subidas por el usuario
+- Extraer texto de imágenes mediante OCR
+- Responder preguntas específicas sobre el contenido visual
+- Mantener el contexto visual a lo largo de la conversación
+
+Esta implementación enriquece significativamente la experiencia del usuario, permitiendo una interacción más natural y completa con el asistente. Además, mantiene el enfoque educativo del proyecto, sirviendo como ejemplo práctico de integración de tecnologías multimodales en aplicaciones de IA conversacional.

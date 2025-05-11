@@ -17,10 +17,13 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
   - **process.md**: Registro del proceso de desarrollo
   - **grimorio-proyecto.md**: Información general del proyecto
   - **problemas_y_propuestas.md**: Registro de problemas y soluciones
+  - **integracion_vision.md**: Documentación de la integración de capacidades de visión
+  - **manejo_contexto.md**: Explicación del manejo de contexto entre modelos
+  - **integracion_modelos.md**: Guía para integrar nuevos modelos
 - **src/**: Código fuente modularizado
   - **api/**: Módulos para interactuar con APIs
     - **base_client.py**: Clase base abstracta para clientes de API
-    - **groq_client.py**: Cliente para la API de Groq
+    - **groq_client.py**: Cliente para la API de Groq con soporte para visión
   - **components/**: Componentes de la interfaz de usuario
     - **chat.py**: Componente de chat
     - **sidebar.py**: Componente de barra lateral
@@ -33,6 +36,8 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
     - **logger.py**: Configuración del sistema de logging
     - **session_state.py**: Gestión del estado de la sesión
     - **styles.py**: Estilos y temas de la aplicación
+    - **image_processor.py**: Procesamiento y optimización de imágenes
+    - **agentic_tools_manager.py**: Gestión de herramientas agénticas
 - **requirements.txt**: Dependencias del proyecto
 
 ## Configuración
@@ -53,6 +58,8 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - **Sistema de registro**: Logging detallado de operaciones y errores
 - **Seguimiento de modelos**: Muestra qué modelo generó cada respuesta
 - **Mantenimiento de contexto**: Conserva el hilo de la conversación al cambiar de modelo
+- **Capacidades de visión**: Procesamiento y análisis de imágenes
+- **Herramientas agénticas**: Búsqueda web y ejecución de código
 
 ## Diseño de Interfaz
 - **Tema "Fresh Tech"**: Interfaz moderna con gradientes y efectos visuales
@@ -63,9 +70,11 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 
 ## Modelos Soportados
 - **DeepSeek-r1-distill-llama-70b**: Modelo de DeepSeek con contexto de 128K
-- **Meta-llama/llama-4-maverick-17b-128e-instruct**: Modelo de Meta con contexto de 131K
-- **Meta-llama/llama-4-scout-17b-16e-instruct**: Modelo de Meta con contexto de 131K
+- **Meta-llama/llama-4-maverick-17b-128e-instruct**: Modelo de Meta con contexto de 131K con capacidades de visión
+- **Meta-llama/llama-4-scout-17b-16e-instruct**: Modelo de Meta con contexto de 131K con capacidades de visión
 - **Qwen-qwq-32b**: Modelo de Alibaba Cloud con contexto de 128K
+- **Compound-beta**: Modelo agéntico con capacidades de búsqueda web
+- **Compound-beta-mini**: Versión más ligera del modelo agéntico
 
 ## Sistema de Registro
 - **Logging detallado**: Registro de todas las operaciones importantes
@@ -85,6 +94,9 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - Soporte para modelos agénticos (compound-beta y compound-beta-mini) con capacidades de búsqueda web
 - Integración de herramientas agénticas que permiten buscar información en tiempo real
 - Sistema robusto para procesar y utilizar información obtenida de fuentes externas
+- Capacidades de visión para analizar imágenes y extraer texto (OCR)
+- Procesamiento automático de imágenes con optimización de tamaño y resolución
+- Integración del contexto visual con el contexto de conversación
 - Configuración flexible a través de la barra lateral
 - Sistema de registro para monitoreo y depuración
 - Mantenimiento de contexto al cambiar entre modelos
@@ -92,12 +104,13 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 
 ## Próximos Pasos Potenciales
 - Implementar guardado y carga de conversaciones
-- Añadir soporte para cargar archivos y procesarlos
-- Integrar nuevos proveedores de API (como OpenAI, Anthropic, etc.)
+- Integrar nuevos proveedores de API de visión (como OpenAI, Claude, Gemini)
 - Implementar comparación lado a lado de respuestas de diferentes modelos
 - Añadir análisis de rendimiento y uso de tokens
 - Implementar selección de temas visuales
-- Agregar funcionalidades de búsqueda web y herramientas adicionales
+- Expandir capacidades de visión con segmentación y detección de objetos
+- Implementar generación de imágenes basada en descripciones textuales
+- Añadir soporte para análisis de múltiples imágenes en una conversación
 
 ## La realidad profunda y progresiva sobre MetanoIA
 Todxs sabemos que la IA es un fenómeno profundo y progresivo que está transformando la forma en que interactuamos con la tecnología y el mundo. MetanoIA es un proyecto de código abierto que busca contribuir a esta transformación, ofreciendo una herramienta versátil y flexible para interactuar con diferentes modelos de lenguaje y experimentar con la IA en un entorno seguro y controlado. Al mismo tiempo brinda la documentación necesaria  para entender como se está desarrollando el proyecto y como se está utilizando la IA para resolver problemas reales y contribuir al progreso humano. En mi caso personal estoy aprendiendo a como programar de forma estructurada, profesional y progresiva con la IA. No se trata solo de hacer que la IA haga todo el trabajo por ti, sino de ir paso a paso con ella, aprender de ella y entender lo que estamos co-creando y/o co-generando.
