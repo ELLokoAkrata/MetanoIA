@@ -5,6 +5,8 @@ import streamlit as st
 import os
 from src.models.config import get_model_display_name, get_context_limit, get_model
 from src.utils.agentic_tools_manager import AgenticToolsManager
+from src.components.audio import display_audio_input, cleanup_temp_files
+from src.api.audio_transcription import AudioTranscriber
 
 def display_chat_history(session_state, models):
     """
@@ -165,6 +167,21 @@ def handle_user_input(prompt, session_state, groq_client, logger):
         groq_client (GroqClient): Cliente de la API de Groq.
         logger (logging.Logger): Logger para registrar información.
     """
+    # Verificar si hay una transcripción de audio pendiente
+    if hasattr(session_state, 'pending_audio_transcription') and session_state.pending_audio_transcription:
+        audio_data = session_state.pending_audio_transcription
+        session_state.pending_audio_transcription = None
+        
+        # Usar el texto transcrito como prompt
+        prompt = f"[Transcripción de audio]: {audio_data['text']}"
+        
+        # Añadir el archivo temporal a la lista para limpieza posterior
+        if 'temp_audio_files' not in session_state:
+            session_state.temp_audio_files = []
+        
+        if 'path' in audio_data and audio_data['path']:
+            session_state.temp_audio_files.append(audio_data['path'])
+    
     # Verificar que tenemos una API key
     if not groq_client.is_configured():
         st.error("Por favor, ingresa tu API key de Groq en la barra lateral.")
