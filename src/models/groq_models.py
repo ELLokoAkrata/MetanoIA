@@ -105,13 +105,42 @@ class QwenModel(BaseLanguageModel):
     def provider(self):
         return "Groq"
 
+class Llama33VersatileModel(BaseLanguageModel):
+    """Implementación del modelo Llama 3.3 Versatile de Groq.
+    Este modelo está optimizado para funciones de Tool-Use."""
+    
+    @property
+    def id(self):
+        return "llama-3.3-70b-versatile"
+    
+    @property
+    def display_name(self):
+        return "Llama 3.3 Versatile (Tools)"
+    
+    @property
+    def context_length(self):
+        return 32768
+    
+    @property
+    def max_context_messages(self):
+        return 15
+    
+    @property
+    def provider(self):
+        return "Groq"
+    
+    @property
+    def supports_tools(self):
+        return True
+
 # Diccionario de todos los modelos disponibles
 AVAILABLE_MODELS = {
     model.id: model for model in [
         DeepSeekModel(),
         MetaMaverickModel(),
         MetaScoutModel(),
-        QwenModel()
+        QwenModel(),
+        Llama33VersatileModel()
     ]
 }
 

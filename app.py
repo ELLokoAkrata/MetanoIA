@@ -6,17 +6,21 @@ de una interfaz de chat moderna y configurable, manteniendo el contexto de la
 conversación al cambiar entre modelos.
 """
 import streamlit as st
+import os
+import tempfile
 
 # Importar módulos propios
 from src.utils.logger import setup_logger
 from src.utils.styles import apply_fresh_tech_theme
-from src.utils.session_state import initialize_session_state
+from src.utils.session_state import initialize_session_state, cleanup_temp_files
 from src.models.config import AVAILABLE_MODELS
 from src.api.groq_client import GroqClient
 from src.components.sidebar import render_sidebar
-from src.components.chat import display_chat_history, handle_user_input, display_agentic_context, cleanup_temp_files
+from src.components.chat import display_chat_history, handle_user_input, display_agentic_context
 from src.components.audio import display_audio_input
+from src.components.file_generator import display_file_generator_info, handle_file_generation_request
 from src.api.audio_transcription import AudioTranscriber
+from src.api.file_generator import FileGenerator
 
 # Configuración de la página
 st.set_page_config(
@@ -39,6 +43,11 @@ def main():
     # Inicializar el cliente de Groq
     groq_client = GroqClient(logger=logger)
     
+    # Inicializar el generador de archivos
+    temp_dir = os.path.join(tempfile.gettempdir(), "metanoia_files")
+    os.makedirs(temp_dir, exist_ok=True)
+    file_generator = FileGenerator(temp_dir=temp_dir, logger=logger)
+    
     # Título principal
     st.title("🤖 MetanoIA")
     st.markdown("Chat bot modular usando Streamlit y la API de Groq")
@@ -53,6 +62,9 @@ def main():
     # Si la configuración cambió, recargar la página
     if config_changed:
         st.rerun()
+    
+    # Mostrar información sobre la generación de archivos
+    display_file_generator_info()
     
     # Procesar entrada de audio si está habilitada
     audio_data = display_audio_input(session_state)
@@ -98,7 +110,12 @@ def main():
     
     # Entrada de usuario
     if prompt := st.chat_input("Escribe tu mensaje aquí..."):
-        handle_user_input(prompt, session_state, groq_client, logger)
+        # Verificar si es una solicitud de generación de archivo
+        is_file_request = handle_file_generation_request(prompt, session_state, groq_client, file_generator, logger)
+        
+        # Si no es una solicitud de generación de archivo, manejar como un mensaje normal
+        if not is_file_request:
+            handle_user_input(prompt, session_state, groq_client, logger)
 
 if __name__ == "__main__":
     main()

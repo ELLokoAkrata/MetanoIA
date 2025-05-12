@@ -80,20 +80,5 @@ def display_audio_input(session_state):
     
     return audio_data
 
-def cleanup_temp_files(session_state):
-    """
-    Limpia los archivos temporales de audio.
-    
-    Args:
-        session_state (SessionState): Estado de la sesión de Streamlit.
-    """
-    if "temp_audio_files" in session_state and session_state.temp_audio_files:
-        for file_path in session_state.temp_audio_files:
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-            except Exception as e:
-                st.error(f"Error al eliminar archivo temporal: {str(e)}")
-        
-        # Limpiar la lista después de eliminar
-        session_state.temp_audio_files = []
+# La función cleanup_temp_files se ha movido al módulo src.utils.session_state
+# para centralizar la gestión de archivos temporales

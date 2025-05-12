@@ -3,6 +3,7 @@ Módulo para interactuar con la API de Groq.
 """
 import os
 import time
+import json
 import streamlit as st
 from groq import Groq
 from src.api.base_client import BaseAPIClient
@@ -206,6 +207,193 @@ class GroqClient(BaseAPIClient):
             return {
                 "content": error_msg,
                 "executed_tools": []
+            }
+    
+    def generate_response_with_tools(self, model, messages, tools, temperature, max_tokens, callback=None, tool_choice="auto"):
+        """
+        Genera una respuesta utilizando herramientas definidas (tools).
+        
+        Args:
+            model (str): ID del modelo a utilizar.
+            messages (list): Lista de mensajes para la conversación.
+            tools (list): Lista de herramientas disponibles para el modelo.
+            temperature (float): Temperatura para la generación.
+            max_tokens (int): Número máximo de tokens en la respuesta.
+            callback (callable, optional): Función de callback para cada fragmento de respuesta.
+            tool_choice (str, optional): Estrategia para elegir herramientas. Por defecto "auto".
+            
+        Returns:
+            dict: Diccionario con la respuesta y las llamadas a herramientas.
+        """
+        if not self.is_configured():
+            return {"content": "Error: API no configurada. Por favor, proporciona una clave API.", "tool_calls": []}
+        
+        try:
+            if self.logger:
+                self.logger.info(f"Iniciando llamada a API con herramientas (modelo: {model})")
+                self.logger.info(f"Parámetros: temperatura={temperature}, max_tokens={max_tokens}")
+                self.logger.info(f"Herramientas disponibles: {len(tools)}")
+            
+            start_time = time.time()
+            
+            # Realizar la llamada a la API con las herramientas definidas
+            response = self.client.chat.completions.create(
+                model=model,
+                messages=messages,
+                tools=tools,
+                tool_choice=tool_choice,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            elapsed_time = time.time() - start_time
+            
+            if self.logger:
+                self.logger.info(f"Respuesta recibida en {elapsed_time:.2f} segundos")
+            
+            # Extraer la respuesta y las llamadas a herramientas
+            response_message = response.choices[0].message
+            tool_calls = response_message.tool_calls if hasattr(response_message, "tool_calls") else []
+            
+            if tool_calls and self.logger:
+                self.logger.info(f"El modelo ha realizado {len(tool_calls)} llamadas a herramientas")
+            
+            return {
+                "message": response_message,
+                "content": response_message.content,
+                "tool_calls": tool_calls
+            }
+            
+        except Exception as e:
+            error_msg = f"Error al llamar a la API con herramientas: {str(e)}"
+            
+            if self.logger:
+                self.logger.error(error_msg)
+                self.logger.exception("Detalles del error:")
+            
+            return {
+                "content": error_msg,
+                "tool_calls": []
+            }
+    
+    def process_tool_calls(self, model, messages, tool_calls, available_functions, temperature, max_tokens):
+        """
+        Procesa las llamadas a herramientas y obtiene una respuesta final.
+        
+        Args:
+            model (str): ID del modelo a utilizar.
+            messages (list): Lista de mensajes para la conversación.
+            tool_calls (list): Lista de llamadas a herramientas realizadas por el modelo.
+            available_functions (dict): Diccionario con las funciones disponibles.
+            temperature (float): Temperatura para la generación.
+            max_tokens (int): Número máximo de tokens en la respuesta.
+            
+        Returns:
+            dict: Diccionario con la respuesta final y los resultados de las herramientas.
+        """
+        if not self.is_configured():
+            return {"content": "Error: API no configurada. Por favor, proporciona una clave API.", "tool_results": []}
+        
+        try:
+            if self.logger:
+                self.logger.info(f"Procesando {len(tool_calls)} llamadas a herramientas")
+            
+            # Añadir el mensaje del asistente con las llamadas a herramientas
+            assistant_message = messages[-1] if messages and messages[-1]["role"] == "assistant" else None
+            if not assistant_message:
+                # Crear un nuevo mensaje del asistente si no existe
+                assistant_message = {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": tool_calls
+                }
+                messages.append(assistant_message)
+            
+            # Procesar cada llamada a herramienta
+            tool_results = []
+            for tool_call in tool_calls:
+                function_name = tool_call.function.name
+                function_args = json.loads(tool_call.function.arguments)
+                
+                if self.logger:
+                    self.logger.info(f"Ejecutando función: {function_name} con argumentos: {function_args}")
+                
+                # Verificar si la función existe
+                if function_name not in available_functions:
+                    error_result = {
+                        "success": False,
+                        "error": f"Función {function_name} no encontrada"
+                    }
+                    tool_results.append(error_result)
+                    
+                    # Añadir mensaje de error a la conversación
+                    messages.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps(error_result)
+                    })
+                    continue
+                
+                # Ejecutar la función
+                function_to_call = available_functions[function_name]
+                try:
+                    function_response = function_to_call(**function_args)
+                    tool_results.append(function_response)
+                    
+                    # Añadir resultado a la conversación
+                    messages.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps(function_response)
+                    })
+                except Exception as e:
+                    error_result = {
+                        "success": False,
+                        "error": f"Error al ejecutar {function_name}: {str(e)}"
+                    }
+                    tool_results.append(error_result)
+                    
+                    # Añadir mensaje de error a la conversación
+                    messages.append({
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": function_name,
+                        "content": json.dumps(error_result)
+                    })
+            
+            # Realizar una segunda llamada a la API con los resultados de las herramientas
+            if self.logger:
+                self.logger.info("Realizando segunda llamada a la API con los resultados de las herramientas")
+            
+            second_response = self.client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            final_response = second_response.choices[0].message.content
+            
+            if self.logger:
+                self.logger.info("Segunda llamada completada, respuesta final generada")
+            
+            return {
+                "content": final_response,
+                "tool_results": tool_results
+            }
+            
+        except Exception as e:
+            error_msg = f"Error al procesar llamadas a herramientas: {str(e)}"
+            
+            if self.logger:
+                self.logger.error(error_msg)
+                self.logger.exception("Detalles del error:")
+            
+            return {
+                "content": error_msg,
+                "tool_results": []
             }
     
     def generate_response_with_image(self, model, messages, image_data, temperature, max_tokens, callback=None):

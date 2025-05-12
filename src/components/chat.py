@@ -5,7 +5,7 @@ import streamlit as st
 import os
 from src.models.config import get_model_display_name, get_context_limit, get_model
 from src.utils.agentic_tools_manager import AgenticToolsManager
-from src.components.audio import display_audio_input, cleanup_temp_files
+from src.components.audio import display_audio_input
 from src.api.audio_transcription import AudioTranscriber
 
 def display_chat_history(session_state, models):
@@ -17,9 +17,18 @@ def display_chat_history(session_state, models):
         models (dict): Diccionario de modelos disponibles.
     """
     for i, msg in enumerate(session_state.messages):
-        with st.chat_message(msg["role"]):
+        # Determinar el rol del mensaje (compatibilidad con formatos antiguos y nuevos)
+        if "role" in msg:
+            role = msg["role"]
+        elif "is_user" in msg:
+            role = "user" if msg["is_user"] else "assistant"
+        else:
+            # Si no se puede determinar el rol, usar un valor predeterminado
+            role = "assistant"
+            
+        with st.chat_message(role):
             # Si es un mensaje del asistente y tiene información del modelo usado, mostrarla
-            if msg["role"] == "assistant" and "model_used" in msg:
+            if role == "assistant" and "model_used" in msg:
                 model_name = get_model_display_name(msg["model_used"])
                 st.caption(f"Generado por: {model_name}")
                 
@@ -114,9 +123,17 @@ def prepare_api_messages(session_state, current_model, logger):
     recent_messages = session_state.messages[-max_context_messages:] if len(session_state.messages) > max_context_messages else session_state.messages
     
     for msg in recent_messages:
-        if msg["role"] in ["user", "assistant"]:
-            # Solo incluir campos estándar (role y content)
-            api_messages.append({"role": msg["role"], "content": msg["content"]})
+        # Determinar el rol del mensaje (compatibilidad con formatos antiguos y nuevos)
+        if "role" in msg and msg["role"] in ["user", "assistant"]:
+            role = msg["role"]
+        elif "is_user" in msg:
+            role = "user" if msg["is_user"] else "assistant"
+        else:
+            # Si no se puede determinar el rol, omitir este mensaje
+            continue
+            
+        # Solo incluir campos estándar (role y content)
+        api_messages.append({"role": role, "content": msg["content"]})
     
     return api_messages
 

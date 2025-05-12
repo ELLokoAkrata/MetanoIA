@@ -2,6 +2,7 @@
 Módulo para la gestión del estado de la sesión.
 """
 import streamlit as st
+import os
 
 def initialize_session_state():
     """
@@ -34,3 +35,50 @@ def initialize_session_state():
         }
     
     return st.session_state
+
+def cleanup_temp_files(session_state):
+    """
+    Limpia todos los archivos temporales generados durante la sesión.
+    
+    Esta función centraliza la limpieza de archivos temporales de diferentes
+    componentes (audio, imágenes, archivos generados, etc.) para mantener
+    un enfoque consistente en la gestión de recursos.
+    
+    Args:
+        session_state (SessionState): Estado de la sesión de Streamlit.
+    """
+    # Limpiar archivos de audio temporales
+    if "temp_audio_files" in session_state and session_state.temp_audio_files:
+        for file_path in session_state.temp_audio_files:
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                st.warning(f"Error al eliminar archivo temporal de audio: {str(e)}")
+        
+        # Limpiar la lista después de eliminar
+        session_state.temp_audio_files = []
+    
+    # Limpiar archivos generados temporales
+    if "temp_files" in session_state and session_state.temp_files:
+        for file_path in session_state.temp_files:
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                st.warning(f"Error al eliminar archivo temporal generado: {str(e)}")
+        
+        # Limpiar la lista después de eliminar
+        session_state.temp_files = []
+    
+    # Limpiar imágenes temporales
+    if "temp_image_files" in session_state and session_state.temp_image_files:
+        for file_path in session_state.temp_image_files:
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                st.warning(f"Error al eliminar imagen temporal: {str(e)}")
+        
+        # Limpiar la lista después de eliminar
+        session_state.temp_image_files = []
