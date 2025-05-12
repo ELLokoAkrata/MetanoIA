@@ -20,13 +20,19 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
   - **integracion_vision.md**: Documentación de la integración de capacidades de visión
   - **manejo_contexto.md**: Explicación del manejo de contexto entre modelos
   - **integracion_modelos.md**: Guía para integrar nuevos modelos
+  - **integracion_speech_to_text.md**: Documentación de la integración de conversión de audio a texto
+  - **solucion_speech_to_text.md**: Solución a problemas con la API de transcripción de audio
+  - **desafios_desarrollo_con_ia.md**: Análisis general de los desafíos del desarrollo con IA
+  - **reglas_proyecto.md**: Reglas y procedimientos estándar del proyecto
 - **src/**: Código fuente modularizado
   - **api/**: Módulos para interactuar con APIs
     - **base_client.py**: Clase base abstracta para clientes de API
     - **groq_client.py**: Cliente para la API de Groq con soporte para visión
+    - **audio_transcription.py**: Servicio para transcripción de audio usando la API de Groq
   - **components/**: Componentes de la interfaz de usuario
     - **chat.py**: Componente de chat
     - **sidebar.py**: Componente de barra lateral
+    - **audio.py**: Componente para manejo de archivos de audio y transcripción
   - **models/**: Configuración y gestión de modelos
     - **base_model.py**: Clase base abstracta para modelos de lenguaje
     - **config.py**: Configuración de modelos disponibles
@@ -60,6 +66,7 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - **Mantenimiento de contexto**: Conserva el hilo de la conversación al cambiar de modelo
 - **Capacidades de visión**: Procesamiento y análisis de imágenes
 - **Herramientas agénticas**: Búsqueda web y ejecución de código
+- **Conversión de audio a texto**: Transcripción de archivos de audio utilizando la API de Groq
 
 ## Diseño de Interfaz
 - **Tema "Fresh Tech"**: Interfaz moderna con gradientes y efectos visuales
@@ -91,8 +98,16 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - Código organizado en módulos con responsabilidades específicas
 - Interfaz de usuario moderna con tema "Fresh Tech"
 - Soporte completo para múltiples modelos de lenguaje
-- Soporte para modelos agénticos (compound-beta y compound-beta-mini) con capacidades de búsqueda web
-- Integración de herramientas agénticas que permiten buscar información en tiempo real
+- Soporte para modelos agénticos (compound-beta y compound-beta-mini) con capacidades avanzadas:
+  - **Búsqueda web en tiempo real**: Capacidad para buscar información actualizada en internet
+  - **Ejecución de código**: Puede ejecutar y analizar código para resolver problemas
+  - **Análisis de datos**: Procesa y analiza datos para extraer conclusiones
+  - **Razonamiento estructurado**: Resuelve problemas paso a paso con un enfoque sistemático
+- Integración de herramientas agénticas que permiten:
+  - Buscar información en tiempo real
+  - Verificar datos y fuentes
+  - Generar respuestas basadas en información actualizada
+  - Realizar tareas complejas de forma autónoma
 - Sistema robusto para procesar y utilizar información obtenida de fuentes externas
 - Capacidades de visión para analizar imágenes y extraer texto (OCR)
 - Procesamiento automático de imágenes con optimización de tamaño y resolución

@@ -516,3 +516,100 @@ MetanoIA ahora cuenta con capacidades de visión que le permiten:
 - Mantener el contexto visual a lo largo de la conversación
 
 Esta implementación enriquece significativamente la experiencia del usuario, permitiendo una interacción más natural y completa con el asistente. Además, mantiene el enfoque educativo del proyecto, sirviendo como ejemplo práctico de integración de tecnologías multimodales en aplicaciones de IA conversacional.
+
+## 2025-05-11: Integración de Speech-to-Text (Voz a Texto)
+
+### Tarea Realizada
+Se ha implementado la funcionalidad de transcripción de voz a texto utilizando la API de Groq, permitiendo a los usuarios subir archivos de audio para transcribirlos y utilizarlos como entrada en la conversación con el asistente.
+
+### Componentes Implementados
+
+1. **Interfaz de usuario para audio** (`src/components/audio.py`):
+   - Implementación de un componente para subir archivos de audio
+   - Opciones para seleccionar el modelo de transcripción y el idioma
+   - Reproducción del audio subido para verificación
+
+2. **Servicio de transcripción** (`src/api/audio_transcription.py`):
+   - Clase `AudioTranscriber` que utiliza la API de Groq para transcribir audio
+   - Soporte para diferentes modelos de Whisper (whisper-large-v3-turbo, whisper-large-v3, distil-whisper-large-v3-en)
+   - Manejo de errores y registro detallado del proceso
+
+3. **Integración con el flujo de conversación**:
+   - Modificación de `handle_user_input` para procesar transcripciones de audio
+   - Gestión de archivos temporales y limpieza automática
+   - Incorporación del texto transcrito como mensaje del usuario
+
+4. **Documentación completa** (`docs/integracion_speech_to_text.md`):
+   - Explicación detallada de la arquitectura y funcionamiento
+   - Descripción de los modelos disponibles y sus características
+   - Limitaciones técnicas y consideraciones de uso
+   - Posibles mejoras futuras
+
+### Código Implementado
+
+```python
+# Componente de audio (src/components/audio.py)
+def display_audio_input(session_state):
+    """
+    Muestra los controles para subir o grabar audio y transcribirlo.
+    """
+    audio_data = None
+    
+    # Crear un expander para los controles de audio
+    with st.expander("🎤 Entrada de voz", expanded=False):
+        # Implementación de la interfaz para subir archivos de audio
+        # y configurar opciones de transcripción
+```
+
+```python
+# Servicio de transcripción (src/api/audio_transcription.py)
+class AudioTranscriber:
+    """
+    Clase para manejar la transcripción de audio utilizando la API de Groq.
+    """
+    def transcribe_audio(self, audio_path, model="whisper-large-v3-turbo", language=None, response_format="text"):
+        """
+        Transcribe un archivo de audio utilizando la API de Groq.
+        """
+        # Implementación de la comunicación con la API de Groq
+        # y procesamiento de resultados
+```
+
+```python
+# Integración en app.py
+# Procesar entrada de audio si está habilitada
+audio_data = display_audio_input(session_state)
+if audio_data:
+    # Mostrar mensaje de procesamiento
+    with st.spinner(f"Transcribiendo audio con {audio_data['model']}..."):
+        # Inicializar el transcriptor de audio
+        transcriber = AudioTranscriber(groq_client, logger)
+        
+        # Transcribir el audio
+        result = transcriber.transcribe_audio(
+            audio_path=audio_data['path'],
+            model=audio_data['model'],
+            language=audio_data['language']
+        )
+```
+
+### Problemas Encontrados y Soluciones
+
+1. **Limitación de Streamlit**:
+   - Problema: La versión actual de Streamlit no incluye el componente `st.audio_recorder()` para grabación directa
+   - Solución: Implementación centrada en la subida de archivos de audio con instrucciones alternativas para grabación
+
+2. **Manejo de archivos temporales**:
+   - Problema: Necesidad de gestionar los archivos de audio subidos temporalmente
+   - Solución: Implementación de un sistema de limpieza automática de archivos temporales
+
+### Resultado
+
+MetanoIA ahora cuenta con capacidades de procesamiento de voz que le permiten:
+
+- Transcribir archivos de audio en múltiples formatos
+- Utilizar diferentes modelos de Whisper según las necesidades
+- Incorporar el texto transcrito directamente en la conversación
+- Mantener un flujo de trabajo educativo donde el usuario comprende cada parte del proceso
+
+Esta integración complementa las capacidades multimodales del proyecto, añadiendo una nueva dimensión de interacción que enriquece la experiencia del usuario y sirve como ejemplo práctico de cómo las tecnologías de IA pueden trabajar juntas en un sistema integrado.
