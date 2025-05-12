@@ -3,6 +3,11 @@ Nueva carpeta/
 .env
 *.log
 
+# Archivos privados
+docs/reflexion_desarrollo_con_ia.md
+
+# Nota: El directorio tareas_diarias/ ahora es público y se incluye en el repositorio
+
 # Archivos de API keys y configuración local
 .streamlit/secrets.toml
 
