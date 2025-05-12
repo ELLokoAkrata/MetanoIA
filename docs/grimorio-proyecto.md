@@ -24,15 +24,18 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
   - **solucion_speech_to_text.md**: Solución a problemas con la API de transcripción de audio
   - **desafios_desarrollo_con_ia.md**: Análisis general de los desafíos del desarrollo con IA
   - **reglas_proyecto.md**: Reglas y procedimientos estándar del proyecto
+  - **integracion_generacion_archivos.md**: Documentación de la integración de generación de archivos
 - **src/**: Código fuente modularizado
   - **api/**: Módulos para interactuar con APIs
     - **base_client.py**: Clase base abstracta para clientes de API
-    - **groq_client.py**: Cliente para la API de Groq con soporte para visión
+    - **groq_client.py**: Cliente para la API de Groq con soporte para visión y herramientas
     - **audio_transcription.py**: Servicio para transcripción de audio usando la API de Groq
+    - **file_generator.py**: Servicio para generación de archivos usando Tool-Use de Groq
   - **components/**: Componentes de la interfaz de usuario
     - **chat.py**: Componente de chat
     - **sidebar.py**: Componente de barra lateral
     - **audio.py**: Componente para manejo de archivos de audio y transcripción
+    - **file_generator.py**: Componente para generación y descarga de archivos
   - **models/**: Configuración y gestión de modelos
     - **base_model.py**: Clase base abstracta para modelos de lenguaje
     - **config.py**: Configuración de modelos disponibles
@@ -67,6 +70,7 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - **Capacidades de visión**: Procesamiento y análisis de imágenes
 - **Herramientas agénticas**: Búsqueda web y ejecución de código
 - **Conversión de audio a texto**: Transcripción de archivos de audio utilizando la API de Groq
+- **Generación de archivos**: Creación y descarga de archivos JSON, Python, Markdown y TXT
 
 ## Diseño de Interfaz
 - **Tema "Fresh Tech"**: Interfaz moderna con gradientes y efectos visuales
@@ -82,6 +86,7 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - **Qwen-qwq-32b**: Modelo de Alibaba Cloud con contexto de 128K
 - **Compound-beta**: Modelo agéntico con capacidades de búsqueda web
 - **Compound-beta-mini**: Versión más ligera del modelo agéntico
+- **Llama-3.3-70b-versatile**: Modelo de Meta optimizado para Tool-Use y generación de archivos
 
 ## Sistema de Registro
 - **Logging detallado**: Registro de todas las operaciones importantes
@@ -112,6 +117,13 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - Capacidades de visión para analizar imágenes y extraer texto (OCR)
 - Procesamiento automático de imágenes con optimización de tamaño y resolución
 - Integración del contexto visual con el contexto de conversación
+- Soporte para Tool-Use con el modelo llama-3.3-70b-versatile:
+  - **Generación de archivos JSON**: Creación de archivos JSON con datos estructurados
+  - **Generación de scripts Python**: Creación de scripts Python ejecutables
+  - **Generación de documentos Markdown**: Creación de documentos con formato Markdown
+  - **Generación de archivos de texto**: Creación de archivos TXT con contenido personalizado
+  - **Descarga de archivos**: Interfaz para descargar los archivos generados
+- Sistema centralizado de gestión de archivos temporales
 - Configuración flexible a través de la barra lateral
 - Sistema de registro para monitoreo y depuración
 - Mantenimiento de contexto al cambiar entre modelos
@@ -126,6 +138,12 @@ MetanoIA es un proyecto que tiene como objetivo crear un desarrollo de algo más
 - Expandir capacidades de visión con segmentación y detección de objetos
 - Implementar generación de imágenes basada en descripciones textuales
 - Añadir soporte para análisis de múltiples imágenes en una conversación
+- Mejorar la generación de archivos:
+  - Implementar plantillas predefinidas para tipos comunes de archivos
+  - Expandir la funcionalidad para soportar más formatos (CSV, HTML, CSS)
+  - Permitir la edición colaborativa de archivos generados
+  - Integrar con sistemas de control de versiones para guardar archivos generados
+  - Mejorar la detección de intenciones para identificar mejor cuándo el usuario quiere generar un archivo
 
 ## La realidad profunda y progresiva sobre MetanoIA
 Todxs sabemos que la IA es un fenómeno profundo y progresivo que está transformando la forma en que interactuamos con la tecnología y el mundo. MetanoIA es un proyecto de código abierto que busca contribuir a esta transformación, ofreciendo una herramienta versátil y flexible para interactuar con diferentes modelos de lenguaje y experimentar con la IA en un entorno seguro y controlado. Al mismo tiempo brinda la documentación necesaria  para entender como se está desarrollando el proyecto y como se está utilizando la IA para resolver problemas reales y contribuir al progreso humano. En mi caso personal estoy aprendiendo a como programar de forma estructurada, profesional y progresiva con la IA. No se trata solo de hacer que la IA haga todo el trabajo por ti, sino de ir paso a paso con ella, aprender de ella y entender lo que estamos co-creando y/o co-generando.

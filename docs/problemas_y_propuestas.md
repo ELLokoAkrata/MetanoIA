@@ -1,5 +1,11 @@
 # Problemas y Propuestas
 
+## Nota sobre el manejo de problemas (2025-05-12)
+
+A partir de esta fecha, los problemas específicos encontrados durante el desarrollo se documentarán principalmente en los archivos de sesión diaria (`tareas_diarias/YYYY-MM-DD.md`). Esto permitirá un seguimiento más detallado y contextualizado de los problemas y sus soluciones, vinculándolos directamente con las tareas y objetivos de cada sesión.
+
+Este documento se reservará para problemas significativos que afecten al proyecto en su conjunto o que requieran un seguimiento a largo plazo. Los problemas menores o específicos de una sesión se documentarán en el archivo correspondiente a esa sesión.
+
 ## Problemas Identificados
 
 ### 2025-05-10: Inconsistencia en el cambio de modelo

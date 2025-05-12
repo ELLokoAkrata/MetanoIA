@@ -10,6 +10,7 @@ MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plata
 - Streaming de respuestas en tiempo real
 - Persistencia de estado entre sesiones
 - Carga y procesamiento de imágenes para modelos multimodales
+- Generación y descarga de archivos (JSON, Python, Markdown, TXT)
 
 ### Soporte para Modelos de IA
 - Integración con múltiples modelos de Groq:
@@ -17,6 +18,8 @@ MetanoIA es un proyecto que va más allá de ser un simple chatbot. Es una plata
   - Meta-llama/llama-4-maverick-17b-128e-instruct (con capacidades de visión)
   - Meta-llama/llama-4-scout-17b-16e-instruct (con capacidades de visión)
   - Qwen-qwq-32b
+  - Llama-3.3-70b-versatile (con capacidades de Tool-Use para generación de archivos)
+  - Compound-beta y Compound-beta-mini (con capacidades agénticas)
 - Arquitectura preparada para integrar otros proveedores de API
 
 ### Arquitectura Modular
@@ -43,15 +46,23 @@ MetanoIA/
 ├── docs/                   # Documentación del proyecto
 │   ├── process.md          # Registro del proceso de desarrollo
 │   ├── grimorio-proyecto.md # Información general del proyecto
-│   └── problemas_y_propuestas.md # Registro de problemas y soluciones
+│   ├── problemas_y_propuestas.md # Registro de problemas y soluciones
+│   ├── integracion_generacion_archivos.md # Documentación sobre generación de archivos
+│   ├── integracion_vision.md # Documentación sobre capacidades de visión
+│   ├── manejo_contexto.md   # Explicación del manejo de contexto
+│   └── integracion_modelos.md # Guía para integrar nuevos modelos
 ├── src/                    # Código fuente modularizado
 │   ├── api/                # Módulos para interactuar con APIs
 │   │   ├── __init__.py
-│   │   └── groq_client.py  # Cliente para la API de Groq
+│   │   ├── groq_client.py  # Cliente para la API de Groq
+│   │   ├── audio_transcription.py # Servicio para transcripción de audio
+│   │   └── file_generator.py # Servicio para generación de archivos
 │   ├── components/         # Componentes de la interfaz de usuario
 │   │   ├── __init__.py
 │   │   ├── chat.py         # Componente de chat
-│   │   └── sidebar.py      # Componente de barra lateral
+│   │   ├── sidebar.py      # Componente de barra lateral
+│   │   ├── audio.py        # Componente para manejo de audio
+│   │   └── file_generator.py # Componente para generación de archivos
 │   ├── models/             # Configuración y gestión de modelos
 │   │   ├── __init__.py
 │   │   └── config.py       # Configuración de modelos disponibles
@@ -134,3 +145,5 @@ El proyecto mantiene una documentación detallada en la carpeta `docs/`:
 - `integracion_vision.md`: Documentación sobre la implementación de capacidades de visión
 - `manejo_contexto.md`: Explicación del sistema de manejo de contexto
 - `integracion_modelos.md`: Guía para integrar nuevos modelos
+- `integracion_generacion_archivos.md`: Documentación sobre la implementación de generación de archivos
+- `integracion_speech_to_text.md`: Documentación sobre la implementación de conversión de audio a texto

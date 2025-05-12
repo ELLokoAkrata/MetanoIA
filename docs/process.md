@@ -399,6 +399,106 @@ def process_executed_tools(self, executed_tools):
 MetanoIA ahora cuenta con capacidades agénticas que le permiten:
 
 - Buscar información en internet en tiempo real usando los modelos compound de Groq
+
+## 2025-05-12: Implementación de generación de archivos con Tool-Use
+
+### Tareas Realizadas
+
+1. **Integración del modelo Llama-3.3-70b-Versatile**:
+   - Implementación de soporte para el modelo `llama-3.3-70b-versatile` de Groq
+   - Creación de la clase `Llama33VersatileModel` para representar este modelo con capacidades de Tool-Use
+   - Actualización del sistema de configuración para incluir este modelo en la interfaz
+
+2. **Desarrollo del generador de archivos**:
+   - Creación del módulo `src/api/file_generator.py` para la generación de archivos
+   - Implementación de herramientas para generar archivos JSON, Python, Markdown y TXT
+   - Desarrollo de un sistema para gestionar archivos temporales y su limpieza
+
+3. **Extensión del cliente de Groq**:
+   - Modificación del cliente para soportar llamadas con herramientas (tools)
+   - Implementación del método `generate_response_with_tools` para procesar tool calls
+   - Mejora del manejo de errores y logging para facilitar la depuración
+
+4. **Implementación de componente UI para generación de archivos**:
+   - Creación del módulo `src/components/file_generator.py` para la interfaz de usuario
+   - Desarrollo de componentes para la generación y descarga de archivos
+   - Integración con la aplicación principal
+
+5. **Reorganización de la gestión de archivos temporales**:
+   - Centralización de la función `cleanup_temp_files` en el módulo de estado de sesión
+   - Implementación de un sistema unificado para la gestión de archivos temporales
+   - Mejora del manejo de excepciones en operaciones con archivos
+
+### Problemas Encontrados y Soluciones
+
+1. **Falta de importación del módulo json**:
+   - Problema: Error `NameError: name 'json' is not defined` en `groq_client.py`
+   - Solución: Añadir la importación del módulo `json` al principio del archivo
+
+2. **Inconsistencia en la estructura de mensajes**:
+   - Problema: Discrepancia entre cómo se guardaban los mensajes en diferentes componentes
+   - Solución: Modificar las funciones `display_chat_history` y `prepare_api_messages` para manejar ambos formatos de mensajes (con `is_user` y con `role`)
+
+### Código Implementado
+
+```python
+# Definición de herramientas para generación de archivos (src/api/file_generator.py)
+def get_tools_definitions(self) -> List[Dict[str, Any]]:
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": "generate_json_file",
+                "description": "Genera un archivo JSON con el contenido proporcionado",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "content": {
+                            "type": "string",
+                            "description": "Contenido del archivo JSON"
+                        },
+                        "filename": {
+                            "type": "string",
+                            "description": "Nombre del archivo JSON"
+                        }
+                    },
+                    "required": ["content"]
+                }
+            }
+        },
+        # Definiciones para otros tipos de archivos...
+    ]
+```
+
+```python
+# Modificación para manejar múltiples formatos de mensajes (src/components/chat.py)
+def display_chat_history():
+    # ...
+    for i, message in enumerate(session_state.messages):
+        # Determinar si el mensaje es del usuario (compatibilidad con formatos antiguos y nuevos)
+        is_user = False
+        if "is_user" in message:
+            is_user = message["is_user"]
+        elif "role" in message and message["role"] == "user":
+            is_user = True
+            
+        with st.chat_message("user" if is_user else "assistant"):
+            # Mostrar el contenido del mensaje
+            st.markdown(message["content"])
+```
+
+### Resultado
+
+MetanoIA ahora cuenta con capacidades de generación de archivos que le permiten:
+
+- Generar archivos JSON para datos estructurados
+- Crear scripts Python ejecutables
+- Producir documentos Markdown bien formateados
+- Generar archivos de texto plano (TXT)
+- Descargar los archivos generados directamente desde la interfaz
+- Mantener un sistema de limpieza automática de archivos temporales
+
+Esta funcionalidad mantiene el enfoque educativo de MetanoIA, donde el usuario puede entender cómo se generan los archivos y aprender sobre diferentes formatos y estructuras de datos.
 - Ejecutar código Python para realizar cálculos o generar visualizaciones
 - Incorporar automáticamente los resultados de estas herramientas al contexto de la conversación
 - Mantener una interfaz limpia y centrada en la conversación, donde el modelo puede citar directamente las fuentes en sus respuestas
