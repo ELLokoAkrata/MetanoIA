@@ -29,8 +29,8 @@
 
 ## Documentación Pendiente
 
-- [ ] Actualizar `grimorio-proyecto.md` con las nuevas funcionalidades
-- [ ] Crear guía de usuario para las funcionalidades de audio
+- [ ✅] Actualizar `grimorio-proyecto.md` con las nuevas funcionalidades
+- [ ✅] Crear guía de usuario para las funcionalidades de audio
 - [ ] Documentar patrones de diseño utilizados en el proyecto
 - [ ] Desarrollar ejemplos de uso para nuevas funcionalidades
 
@@ -47,7 +47,8 @@
 - [ ] Implementar un sistema de plugins para extender funcionalidades
 - [ ] Explorar posibilidades de despliegue como aplicación independiente
 - [ ] Investigar integración con otras APIs de IA para ampliar capacidades
+- [ ] Implementar el sistema de procesamiento de archivos con integración de contexto entre modelos (ver `docs/integracion_procesamiento_archivos.md`)
 
 ---
 
-**Última actualización**: 2025-05-11
+**Última actualización**: 2025-05-13
