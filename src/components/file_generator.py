@@ -173,8 +173,17 @@ def handle_file_generation_request(prompt: str, session_state, groq_client, file
         # Añadir hasta 5 mensajes anteriores para dar contexto
         context_messages = session_state.messages[-5:] if len(session_state.messages) > 5 else session_state.messages
         for msg in context_messages:
+            # Determinar el rol del mensaje (compatibilidad con ambos formatos)
+            if "role" in msg:
+                role = msg["role"]
+            elif "is_user" in msg:
+                role = "user" if msg["is_user"] else "assistant"
+            else:
+                # Si no se puede determinar, asumir que es del asistente
+                role = "assistant"
+                
             messages.append({
-                "role": "user" if msg["is_user"] else "assistant",
+                "role": role,
                 "content": msg["content"]
             })
     

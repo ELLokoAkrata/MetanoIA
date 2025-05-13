@@ -505,6 +505,178 @@ Esta funcionalidad mantiene el enfoque educativo de MetanoIA, donde el usuario p
 
 Esta implementación mejora significativamente las capacidades del asistente, permitiéndole acceder a información actualizada y realizar tareas complejas, lo que resulta en respuestas más precisas y útiles para el usuario.
 
+## 2025-05-13: Mejoras en el procesador de imágenes y generador de archivos
+
+### Tareas Realizadas
+
+1. **Implementación de limpieza automática de imágenes temporales**:
+   - Desarrollo de un sistema para eliminar archivos de imágenes temporales después de 24 horas
+   - Creación de funciones para calcular la antigüedad de archivos en horas
+   - Implementación de verificación automática al inicio de la aplicación
+   - Optimización para evitar impacto en el rendimiento y la memoria
+
+2. **Mejora del redimensionamiento de imágenes**:
+   - Implementación de algoritmos avanzados para preservar el contenido importante
+   - Redimensionamiento en dos pasos para imágenes muy grandes (>3000px)
+   - Detección automática de transparencia para elegir el formato óptimo
+   - Optimización de la compresión progresiva para mantener la calidad
+
+3. **Optimización del generador de archivos**:
+   - Refactorización completa para eliminar redundancia de código
+   - Implementación de un sistema modular para definir tipos de archivos soportados
+   - Creación de un método genérico para la generación de archivos
+   - Añadido soporte para nuevos tipos: CSV, HTML, CSS, JavaScript y Excel
+   - Detección automática de tipos de archivo basada en contenido y nombre
+
+### Código Implementado
+
+```python
+# Limpieza automática de imágenes temporales (src/utils/image_processor.py)
+def cleanup_old_temp_images(directory: str = "temp_images", hours_threshold: float = 24.0) -> Tuple[int, List[str]]:
+    """
+    Limpia archivos de imágenes temporales que superan un umbral de antigüedad.
+    """
+    try:
+        if not os.path.exists(directory):
+            logger.info(f"El directorio {directory} no existe. No hay archivos para limpiar.")
+            return 0, []
+        
+        # Obtener todos los archivos en el directorio
+        file_pattern = os.path.join(directory, "*")
+        all_files = glob.glob(file_pattern)
+        
+        # Filtrar archivos por antigüedad
+        files_to_delete = []
+        for filepath in all_files:
+            if os.path.isfile(filepath):  # Asegurarse de que es un archivo, no un directorio
+                age_hours = get_file_age_hours(filepath)
+                if age_hours >= hours_threshold:
+                    files_to_delete.append(filepath)
+        
+        # Eliminar archivos antiguos
+        deleted_count = 0
+        deleted_files = []
+        for filepath in files_to_delete:
+            try:
+                os.remove(filepath)
+                deleted_count += 1
+                deleted_files.append(filepath)
+                logger.info(f"Archivo temporal eliminado: {filepath}")
+            except Exception as e:
+                logger.error(f"Error al eliminar archivo temporal {filepath}: {str(e)}")
+        
+        return deleted_count, deleted_files
+    
+    except Exception as e:
+        logger.error(f"Error al limpiar archivos temporales: {str(e)}")
+        return 0, []
+```
+
+```python
+# Sistema modular para tipos de archivos (src/api/file_generator.py)
+# Definiciones de tipos de archivos soportados
+FILE_TYPES = {
+    'json': {
+        'extension': '.json',
+        'mime_type': 'application/json',
+        'description': 'Archivo JSON para datos estructurados',
+        'content_type': 'object',
+        'binary': False
+    },
+    'python': {
+        'extension': '.py',
+        'mime_type': 'text/x-python',
+        'description': 'Script Python ejecutable',
+        'content_type': 'string',
+        'binary': False
+    },
+    # Otros tipos de archivos...
+}
+
+# Método genérico para generar archivos
+def generate_file(self, content: Any, filename: str, file_type: str) -> Dict[str, Any]:
+    """
+    Método genérico para generar archivos de cualquier tipo soportado.
+    """
+    # Verificar que el tipo de archivo esté soportado
+    if file_type not in FILE_TYPES:
+        error_msg = f"Tipo de archivo no soportado: {file_type}"
+        return {"success": False, "error": error_msg}
+    
+    # Lógica para generar el archivo según su tipo...
+```
+
+### Problemas Encontrados y Soluciones
+
+1. **Redundancia en el código del generador de archivos**:
+   - Problema: Código repetitivo para cada tipo de archivo con mínimas diferencias
+   - Solución: Implementación de un sistema modular con un diccionario de configuración y un método genérico
+
+2. **Pérdida de calidad en imágenes grandes**:
+   - Problema: El redimensionamiento directo de imágenes muy grandes causaba pérdida de detalles
+   - Solución: Implementación de un algoritmo en dos pasos con redimensionamiento intermedio
+
+3. **Compatibilidad con diferentes tipos de imágenes**:
+   - Problema: Imágenes con transparencia (PNG) se guardaban como JPEG perdiendo el canal alfa
+   - Solución: Detección automática de transparencia y selección inteligente del formato
+
+### Resultado
+
+Las mejoras implementadas han resultado en:
+
+1. **Mayor eficiencia en la gestión de recursos**:
+   - Limpieza automática de archivos temporales evitando acumulación innecesaria
+   - Reducción del espacio en disco utilizado por imágenes temporales
+
+2. **Mejor calidad de imágenes procesadas**:
+   - Preservación de detalles importantes incluso en imágenes grandes
+   - Mantenimiento de la transparencia cuando es necesario
+   - Optimización inteligente del tamaño sin sacrificar calidad
+
+3. **Sistema más flexible y extensible**:
+   - Fácil adición de nuevos tipos de archivos sin duplicar código
+   - Mejor mantenibilidad gracias a la reducción de redundancia
+   - Mayor robustez con manejo mejorado de errores y registro detallado
+
+Estas mejoras mantienen el enfoque educativo de MetanoIA, donde cada componente está diseñado para ser comprensible y enseñar conceptos de programación como modularidad, extensibilidad y optimización.
+
+### Corrección de error de compatibilidad en el formato de mensajes
+
+Durante las pruebas de la aplicación, se detectó un error en el componente de generación de archivos relacionado con la incompatibilidad en el formato de los mensajes:
+
+```
+KeyError: 'is_user'
+```
+
+#### Problema identificado
+
+Se identificó una inconsistencia en cómo se manejaban los mensajes en diferentes partes de la aplicación:
+
+1. En el componente de generación de archivos (`src/components/file_generator.py`), el código intentaba acceder a la clave `"is_user"` en los mensajes.
+2. En otras partes de la aplicación, se estaba utilizando el formato con la clave `"role"` (con valores "user" o "assistant").
+
+#### Solución implementada
+
+Se modificó el código para que sea compatible con ambos formatos de mensajes:
+
+```python
+# Determinar el rol del mensaje (compatibilidad con ambos formatos)
+if "role" in msg:
+    role = msg["role"]
+elif "is_user" in msg:
+    role = "user" if msg["is_user"] else "assistant"
+else:
+    # Si no se puede determinar, asumir que es del asistente
+    role = "assistant"
+    
+messages.append({
+    "role": role,
+    "content": msg["content"]
+})
+```
+
+Esta solución sigue el principio de robustez (Ley de Postel): "Sé conservador en lo que haces, sé liberal en lo que aceptas de otros". Al implementar esta compatibilidad, se asegura que la aplicación funcione correctamente independientemente del formato de mensajes utilizado, lo que mejora la robustez del sistema y facilita futuras actualizaciones.
+
 ## 2025-05-10: Implementación de capacidades de visión
 
 ### Tareas Realizadas
