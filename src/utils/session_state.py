@@ -33,6 +33,10 @@ def initialize_session_state():
             "image_descriptions": [],  # Descripciones generadas para las imágenes
             "max_stored_images": 5  # Número máximo de imágenes a almacenar en el contexto
         }
+
+    # Inicialización de archivos procesados
+    if "processed_files" not in st.session_state:
+        st.session_state.processed_files = []
     
     return st.session_state
 

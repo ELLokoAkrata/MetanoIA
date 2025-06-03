@@ -65,6 +65,17 @@ def main():
     
     # Mostrar información sobre la generación de archivos
     display_file_generator_info()
+
+    # Mostrar archivos procesados si existen
+    if session_state.processed_files:
+        st.subheader("📄 Archivos procesados")
+        for file in session_state.processed_files:
+            label = f"{file['file_name']} ({file['file_type']})"
+            with st.expander(label, expanded=False):
+                if file["file_type"] == "json":
+                    st.json(file["content"])
+                else:
+                    st.text(file["content"])
     
     # Procesar entrada de audio si está habilitada
     audio_data = display_audio_input(session_state)
