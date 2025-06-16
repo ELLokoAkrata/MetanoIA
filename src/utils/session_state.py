@@ -37,7 +37,11 @@ def initialize_session_state():
     # Inicialización de la lista de archivos procesados
     if "processed_files" not in st.session_state:
         st.session_state.processed_files = []  # Lista de archivos procesados
-    
+
+    # Contador para el componente de subida de archivos
+    if "file_uploader_counter" not in st.session_state:
+        st.session_state.file_uploader_counter = 0
+
     return st.session_state
 
 def cleanup_temp_files(session_state):
