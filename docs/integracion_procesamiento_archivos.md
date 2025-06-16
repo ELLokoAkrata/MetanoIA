@@ -311,9 +311,16 @@ def display_file_processor():
     Muestra la interfaz para procesar archivos.
     """
     st.subheader("Procesador de Archivos")
-    
-    uploaded_file = st.file_uploader("Subir archivo para procesar", 
-                                    type=["json", "csv", "txt", "md", "py", "html", "css", "js", "xlsx"])
+
+    if "file_uploader_counter" not in st.session_state:
+        st.session_state.file_uploader_counter = 0
+
+    key = f"file_processor_uploader_{st.session_state.file_uploader_counter}"
+    uploaded_file = st.file_uploader(
+        "Subir archivo para procesar",
+        type=["json", "csv", "txt", "md", "py", "html", "css", "js", "xlsx"],
+        key=key,
+    )
     
     if uploaded_file is not None:
         # Detectar tipo de archivo
@@ -352,9 +359,17 @@ def display_file_processor():
                     
                     # Mostrar botón de descarga
                     display_file_download(result)
+                    st.session_state.file_uploader_counter += 1
+                    st.rerun()
                 else:
                     st.error(f"Error al procesar el archivo: {result.get('error', 'Error desconocido')}")
 ```
+
+En este flujo, la clave del uploader se calcula con el contador
+`file_uploader_counter`. Cuando el archivo se procesa correctamente el
+contador se incrementa y se ejecuta `st.rerun()` para reiniciar el widget
+de forma automática, evitando errores por modificar el valor del uploader
+tras su creación.
 
 ### 5. Visualización de Comparación
 

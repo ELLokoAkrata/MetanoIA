@@ -109,6 +109,29 @@ from groq import Groq
 
 **Estado**: ✅ Implementado
 
+### 2025-06-16: Error al reiniciar el uploader de archivos
+**Problema**: Tras procesar un archivo, se intentaba limpiar el widget
+`st.file_uploader` modificando su valor en `st.session_state`. Streamlit
+mostraba el mensaje:
+```
+streamlit.errors.StreamlitAPIException: `st.session_state.file_processor_uploader` cannot be modified after the widget with key `file_processor_uploader` is instantiated.
+```
+
+**Impacto**: El componente de subida quedaba bloqueado y obligaba al
+usuario a recargar la página para procesar otro archivo.
+
+### 2025-06-16: Reinicio automático del cargador de archivos
+**Propuesta**: Generar una clave dinámica para `st.file_uploader` basada en un
+contador `file_uploader_counter` dentro de `session_state`.
+
+**Implementación**:
+- Se añadió el contador en la inicialización del estado de sesión.
+- El uploader se crea con `key=f"file_processor_uploader_{session_state['file_uploader_counter']}"`.
+- Tras procesar un archivo con éxito se incrementa el contador y se ejecuta
+  `st.rerun()` para reiniciar el widget.
+
+**Estado**: ✅ Implementado
+
 ### 2025-05-09: Implementar interfaz de chat completa
 **Propuesta**: Desarrollar una interfaz de chat completa con soporte para múltiples modelos, configuración de parámetros y streaming de respuestas.
 
