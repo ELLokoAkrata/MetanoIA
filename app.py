@@ -19,6 +19,7 @@ from src.components.sidebar import render_sidebar
 from src.components.chat import display_chat_history, handle_user_input, display_agentic_context
 from src.components.audio import display_audio_input
 from src.components.file_generator import display_file_generator_info, handle_file_generation_request
+from src.components.file_processor import display_file_uploader
 from src.api.audio_transcription import AudioTranscriber
 from src.api.file_generator import FileGenerator
 
@@ -65,6 +66,9 @@ def main():
     
     # Mostrar información sobre la generación de archivos
     display_file_generator_info()
+    
+    # Mostrar el cargador de archivos para procesamiento
+    display_file_uploader(session_state, logger)
     
     # Procesar entrada de audio si está habilitada
     audio_data = display_audio_input(session_state)

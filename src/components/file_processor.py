@@ -19,7 +19,7 @@ def display_file_uploader(session_state, logger=None) -> None:
     """
     st.subheader("Procesamiento de Archivos")
     uploaded_file = st.file_uploader(
-        "Selecciona un archivo", type=["pdf", "txt", "json"]
+        "Selecciona un archivo", type=["pdf", "txt", "json"], key="file_processor_uploader"
     )
 
     if uploaded_file is None:
@@ -42,14 +42,31 @@ def display_file_uploader(session_state, logger=None) -> None:
 
         if "messages" not in session_state:
             session_state.messages = []
+            
+        # Crear un identificador único para este archivo
+        file_id = f"file_{len(session_state.processed_files)}"
+        file_info["file_id"] = file_id
+        
+        # Añadir mensaje del sistema con formato mejorado para que el modelo lo reconozca
         session_state.messages.append(
             {
                 "role": "system",
                 "content": (
-                    f"El usuario ha subido el archivo {uploaded_file.name} "
-                    f"de tipo {extension}.\nContenido procesado:\n{result['content']}"
+                    f"### ARCHIVO PROCESADO (ID: {file_id}) ###\n\n"
+                    f"Nombre: {uploaded_file.name}\n"
+                    f"Tipo: {extension}\n"
+                    f"Contenido:\n\n```{extension}\n{result['content']}\n```\n\n"
+                    f"El usuario puede referirse a este archivo en la conversación. "
+                    f"Debes utilizar la información de este archivo para responder a sus preguntas."
                 ),
             }
         )
+        
+        # Mostrar una vista previa del contenido procesado
+        with st.expander(f"Vista previa del contenido procesado de {uploaded_file.name}"):
+            if extension == "json":
+                st.json(result["content"])
+            else:
+                st.text_area("Contenido:", value=result["content"], height=200, disabled=True)
     else:
         st.error(f"Error al procesar el archivo: {result.get('error', 'desconocido')}")

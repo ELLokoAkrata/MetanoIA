@@ -7,7 +7,6 @@ import uuid
 from src.models.config import AVAILABLE_MODELS, get_model
 from src.utils.agentic_tools_manager import AgenticToolsManager
 from src.utils.image_processor import resize_image, encode_image_to_base64, save_uploaded_image
-from src.components.file_processor import display_file_uploader
 
 def render_sidebar(session_state, groq_client, logger):
     """
@@ -89,6 +88,7 @@ def render_sidebar(session_state, groq_client, logger):
                 uploaded_file = st.file_uploader(
                     "Cargar imagen", 
                     type=["jpg", "jpeg", "png"],
+                    key="sidebar_image_uploader",
                     help="Sube una imagen para que el modelo la analice."
                 )
                 
@@ -237,8 +237,6 @@ def render_sidebar(session_state, groq_client, logger):
             value=session_state.context["system_prompt"],
             height=150
         )
-
-        display_file_uploader(session_state, logger)
         
         # Detectar cambios en la configuración
         config_changed = False

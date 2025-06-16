@@ -33,6 +33,10 @@ def initialize_session_state():
             "image_descriptions": [],  # Descripciones generadas para las imágenes
             "max_stored_images": 5  # Número máximo de imágenes a almacenar en el contexto
         }
+        
+    # Inicialización de la lista de archivos procesados
+    if "processed_files" not in st.session_state:
+        st.session_state.processed_files = []  # Lista de archivos procesados
     
     return st.session_state
 
@@ -82,3 +86,16 @@ def cleanup_temp_files(session_state):
         
         # Limpiar la lista después de eliminar
         session_state.temp_image_files = []
+    
+    # Limpiar archivos procesados temporales (si tienen rutas de archivo)
+    if "processed_files" in session_state and session_state.processed_files:
+        for file_info in session_state.processed_files:
+            if "file_path" in file_info and file_info["file_path"]:
+                try:
+                    if os.path.exists(file_info["file_path"]):
+                        os.remove(file_info["file_path"])
+                except Exception as e:
+                    st.warning(f"Error al eliminar archivo procesado: {str(e)}")
+        
+        # No limpiamos la lista completa, solo las rutas de archivo
+        # ya que el contenido procesado puede seguir siendo útil

@@ -100,6 +100,30 @@ def prepare_api_messages(session_state, current_model, logger):
         {"role": "system", "content": session_state.context["system_prompt"]}
     ]
     
+    # Añadir contexto de archivos procesados si existen
+    if hasattr(session_state, "processed_files") and session_state.processed_files:
+        # Crear un resumen de los archivos disponibles
+        files_summary = "\n### ARCHIVOS PROCESADOS DISPONIBLES ###\n\n"
+        files_summary += "Los siguientes archivos han sido procesados y están disponibles para consulta:\n\n"
+        
+        for i, file_info in enumerate(session_state.processed_files):
+            file_id = file_info.get("file_id", f"file_{i}")
+            file_name = file_info.get("file_name", "Archivo sin nombre")
+            file_type = file_info.get("file_type", "desconocido")
+            
+            files_summary += f"- ID: {file_id} | Nombre: {file_name} | Tipo: {file_type}\n"
+        
+        files_summary += "\nPuedes referirte a estos archivos por su ID o nombre en tus respuestas.\n"
+        files_summary += "Si el usuario pregunta sobre alguno de estos archivos, utiliza la información disponible para responder.\n"
+        
+        # Añadir el resumen como un mensaje del sistema
+        api_messages.append({
+            "role": "system",
+            "content": files_summary
+        })
+        
+        logger.info(f"Añadido contexto de {len(session_state.processed_files)} archivos procesados")
+    
     # Añadir contexto de herramientas agénticas si está habilitado
     if session_state.context.get("enable_agentic", False):
         agentic_tools_manager = AgenticToolsManager(session_state)
