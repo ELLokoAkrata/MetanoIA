@@ -33,16 +33,23 @@ def display_file_uploader(session_state, logger=None) -> None:
     utiliza :class:`FileProcessor` para extraer su información. Para cada
     archivo se calcula un hash que se almacena en
     ``session_state.processed_files`` con el fin de detectar duplicados en
-    recargas posteriores. Si se intenta procesar un archivo ya
-    registrado, se omite el procesamiento y se notifica al usuario.
+    recargas posteriores. Usa un contador ``file_uploader_counter`` para
+    generar una clave dinámica en el uploader y reiniciarlo
+    automáticamente tras procesar un archivo con éxito. Si se intenta
+    procesar un archivo ya registrado, se omite y se informa al usuario.
 
     Args:
         session_state: Estado de la sesión de Streamlit.
         logger (logging.Logger, optional): Logger para registrar eventos.
     """
     st.subheader("Procesamiento de Archivos")
+
+    if "file_uploader_counter" not in session_state:
+        session_state.file_uploader_counter = 0
+
+    dynamic_key = f"file_processor_uploader_{session_state.file_uploader_counter}"
     uploaded_file = st.file_uploader(
-        "Selecciona un archivo", type=["pdf", "txt", "json"], key="file_processor_uploader"
+        "Selecciona un archivo", type=["pdf", "txt", "json"], key=dynamic_key
     )
 
     if uploaded_file is None:
@@ -58,7 +65,6 @@ def display_file_uploader(session_state, logger=None) -> None:
         st.info(f"El archivo '{uploaded_file.name}' ya fue procesado. Se omite.")
         if logger:
             logger.info(f"Procesamiento omitido para archivo duplicado: {uploaded_file.name} ({file_hash})")
-        st.session_state["file_processor_uploader"] = None
         return
 
     processor = FileProcessor(logger=logger)
@@ -105,7 +111,7 @@ def display_file_uploader(session_state, logger=None) -> None:
             else:
                 st.text_area("Contenido:", value=result["content"], height=200, disabled=True)
 
-        # Limpiar el valor del uploader para evitar reprocesar en recargas
-        st.session_state["file_processor_uploader"] = None
+        session_state.file_uploader_counter += 1
+        st.rerun()
     else:
         st.error(f"Error al procesar el archivo: {result.get('error', 'desconocido')}")
