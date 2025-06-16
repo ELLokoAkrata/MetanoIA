@@ -1,17 +1,40 @@
-"""Componente para la subida y procesamiento de archivos."""
+"""Componente para la subida y procesamiento de archivos.
 
+Este módulo proporciona las funciones necesarias para que el usuario
+suba archivos y se integren en el contexto de conversación. Se
+almacenan los archivos procesados en ``st.session_state`` y se evita el
+procesamiento duplicado mediante un identificador único por archivo.
+"""
+
+import hashlib
 import streamlit as st
 from typing import Any, Dict
 
 from src.api.file_processor import FileProcessor
 
 
+def _generate_file_hash(data: bytes) -> str:
+    """Genera un hash SHA256 a partir de los bytes del archivo.
+
+    Args:
+        data: Datos binarios del archivo.
+
+    Returns:
+        str: Representación hexadecimal del hash.
+    """
+
+    return hashlib.sha256(data).hexdigest()
+
+
 def display_file_uploader(session_state, logger=None) -> None:
     """Muestra un cargador de archivos y procesa su contenido.
 
-    Este componente permite subir archivos en formato PDF, TXT o JSON,
-    procesarlos con :class:`FileProcessor` y añadir la información
-    obtenida al contexto general de la conversación.
+    Este componente permite subir archivos en formato PDF, TXT o JSON y
+    utiliza :class:`FileProcessor` para extraer su información. Para cada
+    archivo se calcula un hash que se almacena en
+    ``session_state.processed_files`` con el fin de detectar duplicados en
+    recargas posteriores. Si se intenta procesar un archivo ya
+    registrado, se omite el procesamiento y se notifica al usuario.
 
     Args:
         session_state: Estado de la sesión de Streamlit.
@@ -26,7 +49,18 @@ def display_file_uploader(session_state, logger=None) -> None:
         return
 
     file_bytes = uploaded_file.getvalue()
+    file_hash = _generate_file_hash(file_bytes)
     extension = uploaded_file.name.split(".")[-1].lower()
+
+    # Verificar si el archivo ya fue procesado
+    processed_files = session_state.get("processed_files", [])
+    if any(info.get("file_hash") == file_hash for info in processed_files):
+        st.info(f"El archivo '{uploaded_file.name}' ya fue procesado. Se omite.")
+        if logger:
+            logger.info(f"Procesamiento omitido para archivo duplicado: {uploaded_file.name} ({file_hash})")
+        st.session_state["file_processor_uploader"] = None
+        return
+
     processor = FileProcessor(logger=logger)
     result = processor.process_file(file_bytes, extension)
 
@@ -35,6 +69,8 @@ def display_file_uploader(session_state, logger=None) -> None:
         file_info: Dict[str, Any] = {
             "file_name": uploaded_file.name,
             "file_type": extension,
+            "file_size": len(file_bytes),
+            "file_hash": file_hash,
             "content": result["content"],
         }
         session_state.processed_files = session_state.get("processed_files", [])
@@ -43,7 +79,7 @@ def display_file_uploader(session_state, logger=None) -> None:
         if "messages" not in session_state:
             session_state.messages = []
             
-        # Crear un identificador único para este archivo
+        # Crear un identificador secuencial para este archivo
         file_id = f"file_{len(session_state.processed_files)}"
         file_info["file_id"] = file_id
         
@@ -61,12 +97,15 @@ def display_file_uploader(session_state, logger=None) -> None:
                 ),
             }
         )
-        
+
         # Mostrar una vista previa del contenido procesado
         with st.expander(f"Vista previa del contenido procesado de {uploaded_file.name}"):
             if extension == "json":
                 st.json(result["content"])
             else:
                 st.text_area("Contenido:", value=result["content"], height=200, disabled=True)
+
+        # Limpiar el valor del uploader para evitar reprocesar en recargas
+        st.session_state["file_processor_uploader"] = None
     else:
         st.error(f"Error al procesar el archivo: {result.get('error', 'desconocido')}")
