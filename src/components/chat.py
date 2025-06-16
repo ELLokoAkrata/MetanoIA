@@ -7,6 +7,7 @@ from src.models.config import get_model_display_name, get_context_limit, get_mod
 from src.utils.agentic_tools_manager import AgenticToolsManager
 from src.components.audio import display_audio_input
 from src.api.audio_transcription import AudioTranscriber
+from src.api.file_processor import FileProcessor
 
 def display_chat_history(session_state, models):
     """
@@ -82,6 +83,66 @@ def display_chat_history(session_state, models):
             # Mostrar el contenido del mensaje
             st.markdown(msg["content"])
 
+def add_file_context(session_state, api_messages, current_model, logger):
+    """Añade contexto de archivos procesados a los mensajes del sistema.
+
+    Esta función recupera los archivos almacenados en ``session_state.processed_files``
+    y genera mensajes de sistema con fragmentos de su contenido. Los fragmentos se
+    limitan utilizando ``get_context_limit`` para evitar sobrepasar la ventana de
+    contexto del modelo.
+
+    Args:
+        session_state (SessionState): Estado actual de la sesión.
+        api_messages (list): Lista de mensajes a enviar a la API.
+        current_model (str): Identificador del modelo utilizado.
+        logger (logging.Logger): Logger para registrar eventos.
+
+    Returns:
+        list: Lista de mensajes con el contexto de archivos añadido.
+    """
+
+    if not hasattr(session_state, "processed_files") or not session_state.processed_files:
+        return api_messages
+
+    max_tokens = get_context_limit(current_model)
+    processor = FileProcessor(max_tokens=max_tokens, logger=logger)
+
+    summary = "\n### ARCHIVOS PROCESADOS DISPONIBLES ###\n\n"
+    summary += "Los siguientes archivos han sido procesados:\n"
+
+    for i, file_info in enumerate(session_state.processed_files):
+        file_id = file_info.get("file_id", f"file_{i}")
+        file_name = file_info.get("file_name", "archivo_sin_nombre")
+        file_type = file_info.get("file_type", "desconocido")
+        content = file_info.get("content", "")
+
+        summary += f"- ID: {file_id} | Nombre: {file_name} | Tipo: {file_type}\n"
+
+        text_content = content if isinstance(content, str) else str(content)
+        fragments = processor.dividir_en_fragmentos(text_content)
+
+        for j, fragment in enumerate(fragments):
+            api_messages.append(
+                {
+                    "role": "system",
+                    "content": (
+                        f"### CONTEXTO DEL ARCHIVO {file_name} (ID: {file_id}) "
+                        f"fragmento {j + 1}###\n\n" f"```{file_type}\n{fragment}\n```"
+                    ),
+                }
+            )
+
+        logger.info(
+            f"Añadido contexto del archivo {file_name} en {len(fragments)} fragmentos"
+        )
+
+    api_messages.append({"role": "system", "content": summary})
+    logger.info(
+        f"Añadido contexto de {len(session_state.processed_files)} archivos procesados"
+    )
+
+    return api_messages
+
 def prepare_api_messages(session_state, current_model, logger):
     """
     Prepara los mensajes para enviar a la API, filtrando campos personalizados
@@ -100,29 +161,8 @@ def prepare_api_messages(session_state, current_model, logger):
         {"role": "system", "content": session_state.context["system_prompt"]}
     ]
     
-    # Añadir contexto de archivos procesados si existen
-    if hasattr(session_state, "processed_files") and session_state.processed_files:
-        # Crear un resumen de los archivos disponibles
-        files_summary = "\n### ARCHIVOS PROCESADOS DISPONIBLES ###\n\n"
-        files_summary += "Los siguientes archivos han sido procesados y están disponibles para consulta:\n\n"
-        
-        for i, file_info in enumerate(session_state.processed_files):
-            file_id = file_info.get("file_id", f"file_{i}")
-            file_name = file_info.get("file_name", "Archivo sin nombre")
-            file_type = file_info.get("file_type", "desconocido")
-            
-            files_summary += f"- ID: {file_id} | Nombre: {file_name} | Tipo: {file_type}\n"
-        
-        files_summary += "\nPuedes referirte a estos archivos por su ID o nombre en tus respuestas.\n"
-        files_summary += "Si el usuario pregunta sobre alguno de estos archivos, utiliza la información disponible para responder.\n"
-        
-        # Añadir el resumen como un mensaje del sistema
-        api_messages.append({
-            "role": "system",
-            "content": files_summary
-        })
-        
-        logger.info(f"Añadido contexto de {len(session_state.processed_files)} archivos procesados")
+    # Añadir contexto de archivos procesados
+    api_messages = add_file_context(session_state, api_messages, current_model, logger)
     
     # Añadir contexto de herramientas agénticas si está habilitado
     if session_state.context.get("enable_agentic", False):
