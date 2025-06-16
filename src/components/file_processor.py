@@ -11,15 +11,19 @@ def display_file_uploader(session_state, logger=None) -> None:
 
     Este componente permite subir archivos en formato PDF, TXT o JSON,
     procesarlos con :class:`FileProcessor` y añadir la información
-    obtenida al contexto general de la conversación.
+    obtenida al contexto general de la conversación. Tras procesar un
+    archivo, el usuario puede reiniciar el cargador para subir otro sin
+    modificar directamente ``st.session_state``.
 
     Args:
         session_state: Estado de la sesión de Streamlit.
         logger (logging.Logger, optional): Logger para registrar eventos.
     """
     st.subheader("Procesamiento de Archivos")
+    uploader_key = f"file_processor_uploader_{session_state.get('file_uploader_counter', 0)}"
+
     uploaded_file = st.file_uploader(
-        "Selecciona un archivo", type=["pdf", "txt", "json"], key="file_processor_uploader"
+        "Selecciona un archivo", type=["pdf", "txt", "json"], key=uploader_key
     )
 
     if uploaded_file is None:
@@ -68,5 +72,11 @@ def display_file_uploader(session_state, logger=None) -> None:
                 st.json(result["content"])
             else:
                 st.text_area("Contenido:", value=result["content"], height=200, disabled=True)
+
+        if st.button("Procesar otro archivo"):
+            session_state.file_uploader_counter = session_state.get("file_uploader_counter", 0) + 1
+            if logger:
+                logger.info("Reiniciando cargador de archivos")
+            st.rerun()
     else:
         st.error(f"Error al procesar el archivo: {result.get('error', 'desconocido')}")

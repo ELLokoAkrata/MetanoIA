@@ -37,6 +37,10 @@ def initialize_session_state():
     # Inicialización de la lista de archivos procesados
     if "processed_files" not in st.session_state:
         st.session_state.processed_files = []  # Lista de archivos procesados
+
+    # Contador para reiniciar el cargador de archivos sin modificar su estado
+    if "file_uploader_counter" not in st.session_state:
+        st.session_state.file_uploader_counter = 0
     
     return st.session_state
 
